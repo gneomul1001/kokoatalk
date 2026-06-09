@@ -3,297 +3,668 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>코코아톡</title>
+    <title>KakaoTalk Simulator</title>
     <style>
         :root {
             --kakao-yellow: #FEE500;
             --kakao-bg: #BACEE0;
             --my-bubble: #FEE500;
             --other-bubble: #FFFFFF;
+            --text-main: #191919;
+            --text-sub: #707070;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Malgun Gothic', sans-serif; }
-        body { display: flex; height: 100vh; background-color: #f0f0f0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; }
+        body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-main); }
 
-        /* 사이드바 관리자 패널 */
-        #admin-panel { width: 350px; background: #fff; border-right: 1px solid #ddd; padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-        h3 { border-bottom: 2px solid var(--kakao-yellow); padding-bottom: 5px; margin-bottom: 10px; font-size: 16px; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 12px; color: #666; font-weight: bold; }
-        input, select, button { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        button { background: #4a4a4a; color: #fff; cursor: pointer; border: none; font-weight: bold; }
-        button:hover { background: #333; }
-        .btn-yellow { background: var(--kakao-yellow); color: #000; }
-        .btn-yellow:hover { background: #e6ce00; }
+        /* 전체 앱 컨테이너 (스마트폰 크기 고정) */
+        #phone-wrapper { width: 400px; height: 780px; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-radius: 30px; overflow: hidden; display: flex; flex-direction: column; position: relative; border: 4px solid #333; }
         
-        /* 목록 스타일 */
-        .list-container { max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 5px; border-radius: 4px; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 5px; font-size: 13px; border-bottom: 1px solid #f9f9f9; }
-        .item-row button { padding: 2px 6px; font-size: 11px; background: #ff4d4d; }
+        /* 상단 네비게이션 헤더 */
+        .app-header { padding: 20px 16px 10px; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+        .app-header h1 { font-size: 22px; font-weight: bold; }
+        .header-icons { display: flex; gap: 14px; font-size: 18px; cursor: pointer; }
 
-        /* 카카오톡 채팅창 영역 */
-        #chat-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; background: #e2e2e2; }
-        #phone-container { width: 380px; height: 680px; background: var(--kakao-bg); display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden; position: relative; }
-        
-        /* 채팅방 헤더 */
-        #chat-header { background: rgba(0, 0, 0, 0.08); padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        #room-title { font-weight: bold; font-size: 16px; color: #191919; }
-        #user-count { font-size: 12px; color: #707070; margin-left: 5px; }
+        /* 검색 바 */
+        .search-container { padding: 0 16px 10px; position: relative; }
+        .search-container input { width: 100%; padding: 8px 12px 8px 32px; border: none; background: #f5f5f5; border-radius: 6px; font-size: 14px; outline: none; }
+        .search-container::before { content: "🔍"; position: absolute; left: 26px; top: 7px; font-size: 13px; color: #aaa; }
 
-        /* 채팅 내용 영역 */
-        #chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        
-        /* 말풍선 공통 스타일 */
-        .msg-wrapper { display: flex; flex-direction: column; max-width: 80%; position: relative; }
-        .msg-wrapper.other { align-self: flex-start; }
-        .msg-wrapper.me { align-self: flex-end; align-items: flex-end; }
-        
-        .sender-name { font-size: 12px; color: #4e4e4e; margin-bottom: 3px; display: flex; align-items: center; gap: 4px;}
-        .sender-tag { background: #e6ce00; font-size: 9px; padding: 1px 3px; border-radius: 3px; color: #fff; font-weight: bold;}
-        
-        .bubble-area { display: flex; align-items: flex-end; gap: 5px; }
-        .me .bubble-area { flex-direction: row-reverse; }
+        /* 메인 콘텐츠 영역 */
+        .main-content { flex: 1; overflow-y: auto; background: #fff; padding-bottom: 20px; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
 
-        .bubble { padding: 8px 12px; border-radius: 5px; font-size: 14px; word-break: break-all; box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer; position: relative; }
-        .other .bubble { background: var(--other-bubble); color: #000; border-top-left-radius: 0; }
-        .me .bubble { background: var(--my-bubble); color: #000; border-top-right-radius: 0; }
-        
-        .msg-time { font-size: 10px; color: #707070; white-space: nowrap; }
+        /* 하단 탭바 */
+        .bottom-nav { height: 60px; border-top: 1px solid #eeeeee; display: flex; background: #fafafa; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #555; cursor: pointer; gap: 4px; }
+        .nav-item .icon { font-size: 20px; }
+        .nav-item.active { color: #000; font-weight: bold; }
 
-        /* 말풍선 호버 시 수정/삭제 메뉴 */
-        .bubble-menu { display: none; position: absolute; top: -30px; background: #333; color: #fff; font-size: 11px; border-radius: 4px; padding: 3px 5px; gap: 5px; z-index: 10; }
+        /* 리스트 공통 스타일 */
+        .section-title { font-size: 12px; color: var(--text-sub); padding: 10px 16px 5px; }
+        .item-list { display: flex; flex-direction: column; }
+        .list-item { display: flex; align-items: center; padding: 10px 16px; cursor: pointer; transition: background 0.2s; position: relative; }
+        .list-item:hover { background: #f9f9f9; }
+        .profile-img { width: 44px; height: 44px; border-radius: 16px; background: #e0e0e0; display: flex; justify-content: center; align-items: center; font-size: 20px; margin-right: 12px; object-fit: cover; }
+        .item-info { flex: 1; min-width: 0; }
+        .item-name-row { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+        .item-name { font-weight: bold; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-count { font-size: 13px; color: #ff4b4b; font-weight: normal; }
+        .item-desc { font-size: 12px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .manage-btn { padding: 4px 8px; font-size: 11px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+
+        /* 가짜 배너 스타일 */
+        .banner { margin: 5px 16px; background: #f5f5f5; border-radius: 10px; padding: 12px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eaeaea;}
+
+        /* 버튼 및 플로팅 액션 */
+        .action-bar { padding: 10px 16px; display: flex; gap: 8px; }
+        .btn { background: #f0f0f0; border: none; padding: 8px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; flex: 1; text-align: center;}
+        .btn.primary { background: var(--kakao-yellow); }
+
+        /* 채팅방 모달 스크린 */
+        #chat-room-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--kakao-bg); display: none; flex-direction: column; z-index: 100; }
+        .chat-header { background: rgba(0,0,0,0.05); padding: 15px; display: flex; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .back-btn { font-size: 18px; cursor: pointer; margin-right: 15px; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        
+        /* 메시지 레이아웃 */
+        .msg-line { display: flex; flex-direction: column; max-width: 75%; position: relative; }
+        .msg-line.me { align-self: flex-end; align-items: flex-end; }
+        .msg-line.other { align-self: flex-start; }
+        .msg-sender { font-size: 11px; color: #4e4e4e; margin-bottom: 3px; }
+        
+        .bubble-wrap { display: flex; align-items: flex-end; gap: 5px; width: 100%; }
+        .me .bubble-wrap { flex-direction: row-reverse; }
+        .bubble { padding: 8px 12px; border-radius: 8px; font-size: 14px; word-break: break-all; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer; }
+        .me .bubble { background: var(--my-bubble); border-top-right-radius: 0; }
+        .other .bubble { background: var(--other-bubble); border-top-left-radius: 0; }
+        
+        /* 이미지 및 이모티콘 메시지 */
+        .msg-image { max-width: 120px; max-height: 120px; border-radius: 8px; cursor: pointer; }
+        .msg-emoticon { width: 80px; height: 80px; cursor: pointer; }
+        .msg-time { font-size: 9px; color: #666; white-space: nowrap; }
+
+        /* 말풍선 관리 메뉴 */
+        .bubble-menu { display: none; position: absolute; top: -32px; background: #333; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 4px; gap: 8px; z-index: 10; white-space: nowrap;}
         .bubble:hover .bubble-menu { display: flex; }
-        .bubble-menu span { cursor: pointer; padding: 0 3px; }
+        .bubble-menu span { cursor: pointer; }
         .bubble-menu span:hover { color: var(--kakao-yellow); }
 
-        /* 하단 입력창 (실제 작동X, 데코용) */
-        #chat-input-area { background: #fff; padding: 10px; display: flex; gap: 10px; align-items: center; }
-        #chat-input-area input { flex: 1; border: none; background: #f5f5f5; border-radius: 15px; padding: 8px 15px; outline: none; }
-        #send-btn-dummy { background: var(--kakao-yellow); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #000; font-weight: bold; }
+        /* 채팅 입력창 수정 */
+        .chat-input-area { background: #fff; padding: 8px; display: flex; flex-direction: column; gap: 5px; }
+        .input-row { display: flex; gap: 6px; align-items: center; }
+        .input-row select { padding: 6px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; max-width: 90px;}
+        .input-row input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 18px; font-size: 13px; outline: none; }
+        .media-row { display: flex; gap: 10px; padding: 2px 5px; }
+        .media-btn { font-size: 12px; background: #f0f0f0; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+
+        /* 마이페이지 기본 스타일 */
+        .profile-card { display: flex; align-items: center; padding: 20px; border-bottom: 1px solid #eee; }
+        .profile-card .big-avatar { width: 60px; height: 60px; border-radius: 22px; background: #eee; font-size: 28px; display: flex; justify-content: center; align-items: center; margin-right: 15px;}
+        .wallet-banner { margin: 16px; background: #fee500; border-radius: 10px; padding: 16px; font-weight: bold; display: flex; justify-content: space-between;}
     </style>
 </head>
 <body>
 
-    <div id="admin-panel">
-        <div>
-            <h3>1. 오픈채팅방 설정</h3>
-            <div class="form-group">
-                <label>채팅방 이름</label>
-                <input type="text" id="input-room-name" value="코딩 공부하는 오픈채팅방" oninput="updateRoomName()">
+    <div id="phone-wrapper">
+        <div class="app-header">
+            <h1 id="page-title">친구</h1>
+            <div class="header-icons">
+                <span onclick="alert('검색 기능을 사용하려면 하단 검색바를 이용해주세요.')">🔍</span>
+                <span id="header-add-icon" onclick="triggerAddAction()">➕</span>
+                <span>⚙️</span>
             </div>
         </div>
 
-        <div>
-            <h3>2. 친구(참여자) 추가</h3>
-            <div class="form-group" style="flex-direction: row; gap: 5px;">
-                <input type="text" id="input-friend-name" placeholder="친구 이름 입력" style="flex: 1;">
-                <button onclick="addFriend()" class="btn-yellow">추가</button>
-            </div>
-            <label style="margin-top: 5px; display:block;">현재 참여자 목록</label>
-            <div id="friend-list" class="list-container"></div>
+        <div class="search-container">
+            <input type="text" id="search-bar" placeholder="이름, 대화방 검색..." oninput="handleSearch()">
         </div>
 
-        <div>
-            <h3>3. 대화 추가하기</h3>
-            <div class="form-group">
-                <label>보내는 사람</label>
-                <select id="select-sender">
-                    <option value="me">나 (본인)</option>
-                </select>
+        <div class="main-content" id="main-content">
+            
+            <div id="tab-home" class="tab-panel active">
+                <div class="list-item" style="border-bottom: 1px solid #f4f4f4;">
+                    <div class="profile-img">👤</div>
+                    <div class="item-info">
+                        <div class="item-name">장윤호 (나)</div>
+                        <div class="item-desc">언제나 즐거운 하루</div>
+                    </div>
+                </div>
+                <div class="banner">
+                    <div><strong>왕관만 고르면 선물 증정!</strong><br><span style="font-size:11px; color:#888;">100% 당첨 이벤트 참여하기</span></div>
+                    <span>🍔</span>
+                </div>
+                <div class="section-title">친구 목록</div>
+                <div class="item-list" id="friend-list-container">
+                    </div>
             </div>
-            <div class="form-group" style="margin-top: 8px;">
-                <label>메시지 내용</label>
-                <input type="text" id="input-msg-content" placeholder="메시지를 입력하세요" onkeypress="if(event.key==='Enter') textSend()">
-            </div>
-            <button onclick="textSend()" class="btn-yellow" style="margin-top: 8px; width: 100%;">메시지 전송 (시뮬레이트)</button>
-        </div>
-        
-        <div style="font-size: 11px; color: #888; text-align: center; margin-top: auto;">
-            💡 Tip: 채팅창 안의 말풍선에 마우스를 올리면<br><strong>수정 및 삭제</strong>를 할 수 있습니다!
-        </div>
-    </div>
 
-    <div id="chat-wrapper">
-        <div id="phone-container">
-            <div id="chat-header">
+            <div id="tab-chat" class="tab-panel">
+                <div class="banner" style="background:#f0f4f9;">
+                    <div><strong>매일을 쿨하게, 쿨탠다드</strong><br><span style="font-size:11px; color:#888;">무탠다드 X 기안84 특가전</span></div>
+                    <span>👕</span>
+                </div>
+                <div class="section-title">채팅</div>
+                <div class="item-list" id="chat-list-container">
+                    </div>
+            </div>
+
+            <div id="tab-openchat" class="tab-panel">
+                <div class="action-bar">
+                    <button class="btn primary" onclick="createOpenProfile('my')">+ 내 오픈프로필</button>
+                    <button class="btn" onclick="createOpenProfile('other')">+ 타인 오픈프로필</button>
+                    <button class="btn" onclick="createOpenChatRoom()">+ 오픈채팅방 개설</button>
+                </div>
+                
+                <div class="section-title">내 오픈프로필</div>
+                <div class="item-list" id="my-open-profiles"></div>
+
+                <div class="section-title">다른 사람 오픈프로필</div>
+                <div class="item-list" id="other-open-profiles"></div>
+
+                <div class="section-title">오픈채팅방 목록</div>
+                <div class="item-list" id="open-room-list"></div>
+            </div>
+
+            <div id="tab-mypage" class="tab-panel">
+                <div class="profile-card">
+                    <div class="big-avatar">🚂</div>
+                    <div>
+                        <div style="font-size: 18px; font-weight:bold;">장윤호</div>
+                        <div style="font-size: 13px; color:#707070;">user_id: 19679</div>
+                    </div>
+                </div>
+                <div class="wallet-banner">
+                    <span>talk pay 0원</span>
+                    <span style="font-size:13px; font-weight:normal; color:#555;">송금 | 자산 | 결제</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px; text-align: center; font-size: 12px;">
+                    <div>🎁<br>선물하기</div><div>❤️<br>받은선물</div><div>⚡<br>톡딜</div><div>😊<br>이모티콘</div>
+                    <div>📺<br>라이브</div><div>🛠️<br>메이커스</div><div>🐻<br>프렌즈</div><div>🎮<br>게임</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('home', this)">
+                <span class="icon">👤</span><span>홈</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('chat', this)">
+                <span class="icon">💬</span><span>채팅</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('openchat', this)">
+                <span class="icon">🌐</span><span>오픈채팅</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('mypage', this)">
+                <span class="icon">•••</span><span>더보기</span>
+            </div>
+        </div>
+
+        <div id="chat-room-screen">
+            <div class="chat-header">
+                <span class="back-btn" onclick="closeChatRoom()">◀</span>
                 <div>
-                    <span id="room-title">코딩 공부하는 오픈채팅방</span>
-                    <span id="user-count">1</span>
+                    <span id="current-room-title" style="font-weight:bold; font-size:16px;">채팅방</span>
+                    <span id="current-room-count" style="font-size:13px; color:#555; margin-left:4px;"></span>
                 </div>
-                <div style="font-size: 18px; color: #333;">☰</div>
             </div>
-
-            <div id="chat-messages">
+            <div class="chat-messages" id="chat-messages-box">
                 </div>
-
-            <div id="chat-input-area">
-                <input type="text" placeholder="메시지를 입력하세요..." disabled>
-                <div id="send-btn-dummy">전송</div>
+            <div class="chat-input-area">
+                <div class="media-row">
+                    <button class="media-btn" onclick="sendMedia('image')">🖼️ 이미지 추가</button>
+                    <button class="media-btn" onclick="sendMedia('emoticon')">😀 이모티콘</button>
+                </div>
+                <div class="input-row">
+                    <select id="chat-sender-select">
+                        </select>
+                    <input type="text" id="chat-text-input" placeholder="메시지를 입력하세요..." onkeypress="if(event.key==='Enter') sendTextMessage()">
+                    <button class="btn primary" style="flex:none; width:50px; padding:8px 0; border-radius:15px;" onclick="sendTextMessage()">전송</button>
+                </div>
             </div>
         </div>
+
     </div>
 
     <script>
-        // 초기 데이터 세팅
-        let friends = [
-            { id: 'friend_1', name: '라이언' },
-            { id: 'friend_2', name: '어피치' }
-        ];
-        
-        let messages = [
-            { id: 1, senderId: 'friend_1', senderName: '라이언', content: '안녕하세요! 오픈채팅방 개설 축하드려요.', time: '오후 3:40' },
-            { id: 2, senderId: 'me', senderName: '나', content: '감사합니다 ㅎㅎ 반가워요!', time: '오후 3:41' },
-            { id: 3, senderId: 'friend_2', senderName: '어피치', content: '오늘 공부 인증 참여합니다!', time: '오후 3:42' }
-        ];
+        // 데이터 저장소 시스템 (In-Memory DB 역할)
+        let state = {
+            friends: [
+                { id: 'f1', name: '은지누나', status: '오늘도 파이팅!', avatar: '👩' },
+                { id: 'f2', name: '현지누나', status: '여행 중 ✈️', avatar: '☀️' },
+                { id: 'f3', name: '진현이형', status: '업무 집중 모드', avatar: '🧑' },
+                { id: 'f4', name: '아버지', status: '홈플대란 대기중', avatar: '👨' }
+            ],
+            openProfiles: [
+                { id: 'op1', type: 'my', name: '개발자 장윤호', desc: '프론트엔드 질문 환영', avatar: '💻' },
+                { id: 'op2', type: 'other', name: '고대딩 성인수다방장', desc: '매너 채팅 필수', avatar: '🐱' },
+                { id: 'op3', type: 'other', name: '청춘소설 서포터즈', desc: '공식 운영 프로필입니다.', avatar: '📚' }
+            ],
+            rooms: [
+                { id: 'r1', type: 'normal', title: '가족 단톡방', members: ['me', 'f4', 'f1'], messages: [
+                    { id: 'm1', senderId: 'f4', senderName: '아버지', type: 'text', content: '오늘 저녁 뭐 먹니?', time: '오후 12:17' },
+                    { id: 'm2', senderId: 'me', senderName: '나', type: 'text', content: '삼겹살 먹고 싶어요!', time: '오후 12:19' }
+                ]},
+                { id: 'r2', type: 'open', title: '고대딩 성인수다방', members: ['me', 'op2'], messages: [
+                    { id: 'm3', senderId: 'op2', senderName: '고대딩 성인수다방장', type: 'text', content: '안녕하세요! 반갑습니다.', time: '오후 4:03' }
+                ]},
+                { id: 'r3', type: 'open', title: '동서대 졸업생 정보공유방', members: ['me', 'op3'], messages: [
+                    { id: 'm4', senderId: 'op3', senderName: '청춘소설 서포터즈', type: 'text', content: '일경험 공고 확인 부탁드립니다.', time: '오전 11:20' }
+                ]}
+            ],
+            currentRoomId: null,
+            searchQuery: ''
+        };
 
-        let msgIdCounter = 4;
+        // 초기 화면 구동
+        window.onload = () => {
+            renderAll();
+        };
 
-        // 초기화 실행
-        window.onload = function() {
+        function renderAll() {
             renderFriends();
-            renderMessages();
-            updateRoomCount();
+            renderChatList();
+            renderOpenChatTab();
         }
 
-        // 1. 방 이름 변경
-        function updateRoomName() {
-            const name = document.getElementById('input-room-name').value;
-            document.getElementById('room-title').innerText = name || '오픈채팅방';
-        }
-
-        function updateRoomCount() {
-            // '나' 포함 인원수 계산
-            document.getElementById('user-count').innerText = friends.length + 1;
-        }
-
-        // 2. 친구 추가 / 삭제 기능
-        function renderFriends() {
-            const listDiv = document.getElementById('friend-list');
-            const selectDom = document.getElementById('select-sender');
+        // 탭 전환 엔진
+        function switchTab(tabName, element) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             
-            listDiv.innerHTML = '';
-            // 셀렉트 박스 초기화 (나 기본값)
-            selectDom.innerHTML = '<option value="me">나 (본인)</option>';
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            element.classList.add('active');
 
-            friends.forEach(f => {
-                // 목록 출력
-                listDiv.innerHTML += `
-                    <div class="item-row">
-                        <span>${f.name} (방장봇)</span>
-                        <button onclick="deleteFriend('${f.id}')">삭제</button>
+            const titleMap = { home: '친구', chat: '채팅', openchat: '오픈채팅', mypage: '더보기' };
+            document.getElementById('page-title').innerText = titleMap[tabName];
+        }
+
+        function triggerAddAction() {
+            const currentTab = document.querySelector('.tab-panel.active').id;
+            if (currentTab === 'tab-home') {
+                addNewFriend();
+            } else {
+                alert('친구 추가 기능은 홈 탭에서 작동합니다.');
+            }
+        }
+
+        // 검색 처리 기능
+        function handleSearch() {
+            state.searchQuery = document.getElementById('search-bar').value.toLowerCase().trim();
+            renderAll();
+        }
+
+        // --- 1. 홈 탭: 친구 관리 파트 ---
+        function renderFriends() {
+            const container = document.getElementById('friend-list-container');
+            container.innerHTML = '';
+            
+            const filtered = state.friends.filter(f => f.name.toLowerCase().includes(state.searchQuery));
+
+            filtered.forEach(f => {
+                container.innerHTML += `
+                    <div class="list-item">
+                        <div class="profile-img">${f.avatar}</div>
+                        <div class="item-info" onclick="openDirectChat('${f.id}')">
+                            <div class="item-name">${f.name}</div>
+                            <div class="item-desc">${f.status}</div>
+                        </div>
+                        <button class="manage-btn" onclick="manageFriend('${f.id}')">관리</button>
                     </div>
                 `;
-                // 대화창 선택지 추가
-                selectDom.innerHTML += `<option value="${f.id}">${f.name}</option>`;
             });
-            updateRoomCount();
         }
 
-        function addFriend() {
-            const nameInput = document.getElementById('input-friend-name');
-            const name = nameInput.value.trim();
-            if(!name) return alert('이름을 입력해주세요.');
+        function addNewFriend() {
+            const name = prompt('추가할 친구의 이름을 입력하세요:');
+            if(!name) return;
+            const status = prompt('상태 메시지를 입력하세요:', '상태메시지 없음');
+            const avatars = ['🦊','🐰','🐹','🐻','🐼','🦁','🐸'];
+            const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
 
-            const newId = 'friend_' + Date.now();
-            friends.push({ id: newId, name: name });
-            nameInput.value = '';
+            state.friends.push({
+                id: 'f_' + Date.now(),
+                name,
+                status: status || '',
+                avatar: randomAvatar
+            });
             renderFriends();
         }
 
-        function deleteFriend(id) {
-            friends = friends.filter(f => f.id !== id);
-            renderFriends();
+        function manageFriend(id) {
+            const friend = state.friends.find(f => f.id === id);
+            if(!friend) return;
+
+            const action = prompt(`[${friend.name}] 관리\n1. 수정\n2. 삭제\n원하는 번호를 입력하세요:`);
+            if(action === '1') {
+                const newName = prompt('변경할 이름을 입력하세요:', friend.name);
+                const newStatus = prompt('변경할 상태메시지를 입력하세요:', friend.status);
+                if(newName) friend.name = newName;
+                if(newStatus !== null) friend.status = newStatus;
+                renderFriends();
+            } else if(action === '2') {
+                if(confirm('정말 삭제하시겠습니까?')) {
+                    state.friends = state.friends.filter(f => f.id !== id);
+                    renderFriends();
+                }
+            }
         }
 
-        // 3. 메시지 렌더링 (추가, 수정, 삭제 반영)
-        function renderMessages() {
-            const chatBox = document.getElementById('chat-messages');
-            chatBox.innerHTML = '';
+        // --- 2. 채팅 탭 파트 ---
+        function renderChatList() {
+            const container = document.getElementById('chat-list-container');
+            container.innerHTML = '';
 
-            messages.forEach(msg => {
-                const isMe = msg.senderId === 'me';
-                const wrapperClass = isMe ? 'me' : 'other';
-                
-                // 오픈채팅 방장 표시 (내가 아니면 오픈채팅 방장 마크를 임시로 달아줌)
-                const tagSpan = !isMe ? `<span class="sender-tag">방장</span>` : '';
-                const nameArea = !isMe ? `<div class="sender-name">${msg.senderName} ${tagSpan}</div>` : '';
+            const filtered = state.rooms.filter(r => r.title.toLowerCase().includes(state.searchQuery));
 
-                const msgHtml = `
-                    <div class="msg-wrapper ${wrapperClass}" id="msg-${msg.id}">
-                        ${nameArea}
-                        <div class="bubble-area">
-                            <div class="bubble">
-                                <span class="text-content">${msg.content}</span>
-                                <div class="bubble-menu">
-                                    <span onclick="editMessage(${msg.id})">수정</span>|
-                                    <span onclick="deleteMessage(${msg.id})">삭제</span>
-                                </div>
+            filtered.forEach(r => {
+                const lastMsg = r.messages[r.messages.length - 1];
+                let desc = '대화 내역이 없습니다.';
+                let time = '';
+                if(lastMsg) {
+                    desc = lastMsg.type === 'text' ? lastMsg.content : `[${lastMsg.type}]`;
+                    time = lastMsg.time;
+                }
+
+                container.innerHTML += `
+                    <div class="list-item" onclick="enterChatRoom('${r.id}')">
+                        <div class="profile-img">${r.type === 'open' ? '🌐' : '👥'}</div>
+                        <div class="item-info">
+                            <div class="item-name-row">
+                                <span class="item-name">${r.title}</span>
+                                <span class="item-count">${r.members.length}</span>
                             </div>
-                            <span class="msg-time">${msg.time}</span>
+                            <div class="item-desc">${desc}</div>
+                        </div>
+                        <div style="font-size:10px; color:#aaa; align-self:flex-start; margin-top:4px;">${time}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // 단체 대화방 추가 생성 기능
+        function createOpenChatRoom() {
+            const title = prompt('생성할 방 제목을 입력하세요:');
+            if(!title) return;
+            const type = confirm('오픈채팅방으로 만드시겠습니까? (취소 시 일반 단톡방)') ? 'open' : 'normal';
+
+            state.rooms.push({
+                id: 'r_' + Date.now(),
+                type: type,
+                title: title,
+                members: ['me'],
+                messages: []
+            });
+            renderChatList();
+            renderOpenChatTab();
+        }
+
+        // --- 3. 오픈채팅 탭 파트 (프로필 다중 추가/수정/삭제) ---
+        function renderOpenChatTab() {
+            const myContainer = document.getElementById('my-open-profiles');
+            const otherContainer = document.getElementById('other-open-profiles');
+            const roomContainer = document.getElementById('open-room-list');
+
+            myContainer.innerHTML = '';
+            otherContainer.innerHTML = '';
+            roomContainer.innerHTML = '';
+
+            // 1. 프로필 섹션 렌더링
+            state.openProfiles.forEach(p => {
+                const html = `
+                    <div class="list-item">
+                        <div class="profile-img">${p.avatar}</div>
+                        <div class="item-info">
+                            <div class="item-name">${p.name}</div>
+                            <div class="item-desc">${p.desc}</div>
+                        </div>
+                        <button class="manage-btn" onclick="manageOpenProfile('${p.id}')">관리</button>
+                    </div>
+                `;
+                if(p.type === 'my') myContainer.innerHTML += html;
+                else otherContainer.innerHTML += html;
+            });
+
+            // 2. 오픈채팅방 목록 필터 렌더링
+            state.rooms.filter(r => r.type === 'open').forEach(r => {
+                roomContainer.innerHTML += `
+                    <div class="list-item" onclick="enterChatRoom('${r.id}')">
+                        <div class="profile-img">💬</div>
+                        <div class="item-info">
+                            <div class="item-name">${r.title} <span class="item-count">${r.members.length}</span></div>
+                            <div class="item-desc">오픈채팅 참여 링크 활성화됨</div>
                         </div>
                     </div>
                 `;
-                chatBox.innerHTML += msgHtml;
             });
-
-            // 스크롤 하단 이동
-            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // 메시지 전송 (추가)
-        function textSend() {
-            const selectSender = document.getElementById('select-sender');
-            const contentInput = document.getElementById('input-msg-content');
+        function createOpenProfile(type) {
+            const name = prompt(`${type === 'my' ? '내' : '상대방'} 오픈프로필 명칭을 입력하세요:`);
+            if(!name) return;
+            const desc = prompt('소개글을 입력하세요:');
             
-            const senderId = selectSender.value;
-            const content = contentInput.value.trim();
-            
-            if(!content) return;
+            state.openProfiles.push({
+                id: 'op_' + Date.now(),
+                type: type,
+                name: name,
+                desc: desc || '',
+                avatar: type === 'my' ? '👑' : '👤'
+            });
+            renderOpenChatTab();
+        }
 
-            let senderName = '나';
-            if(senderId !== 'me') {
-                const f = friends.find(f => f.id === senderId);
-                senderName = f ? f.name : '알수없음';
+        function manageOpenProfile(id) {
+            const prof = state.openProfiles.find(p => p.id === id);
+            if(!prof) return;
+
+            const action = prompt(`[${prof.name}] 프로필 설정\n1. 수정\n2. 삭제`);
+            if(action === '1') {
+                const n = prompt('이름 수정:', prof.name);
+                const d = prompt('소개글 수정:', prof.desc);
+                if(n) prof.name = n;
+                if(d !== null) prof.desc = d;
+                renderOpenChatTab();
+            } else if(action === '2') {
+                state.openProfiles = state.openProfiles.filter(p => p.id !== id);
+                renderOpenChatTab();
+            }
+        }
+
+        // --- 4. 상세 채팅방 인공 엔진 (상대방 메시지 조작 포함) ---
+        function openDirectChat(friendId) {
+            const friend = state.friends.find(f => f.id === friendId);
+            let room = state.rooms.find(r => r.type === 'normal' && r.members.includes(friendId) && r.members.length === 2);
+            
+            if(!room) {
+                room = {
+                    id: 'r_' + Date.now(),
+                    type: 'normal',
+                    title: friend.name,
+                    members: ['me', friendId],
+                    messages: []
+                };
+                state.rooms.push(room);
+            }
+            enterChatRoom(room.id);
+        }
+
+        function enterChatRoom(roomId) {
+            const room = state.rooms.find(r => r.id === roomId);
+            if(!room) return;
+
+            state.currentRoomId = roomId;
+            document.getElementById('chat-room-screen').style.display = 'flex';
+            document.getElementById('current-room-title').innerText = room.title;
+            document.getElementById('current-room-count').innerText = room.members.length;
+
+            // 보낸 사람 목록 동적 설정 조작용 박스 채우기
+            const select = document.getElementById('chat-sender-select');
+            select.innerHTML = '<option value="me">나(본인)</option>';
+            
+            room.members.forEach(mId => {
+                if(mId === 'me') return;
+                // 친구 혹은 오픈 프로필 검색해서 옵션 추가
+                const f = state.friends.find(f => f.id === mId);
+                const op = state.openProfiles.find(p => p.id === mId);
+                const name = f ? f.name : (op ? op.name : '참여자');
+                select.innerHTML += `<option value="${mId}">${name}</option>`;
+            });
+
+            // 초대용 타인 추가 옵션 구성
+            select.innerHTML += `<option value="__add__">[+] 대화상대 강제추가</option>`;
+            select.onchange = function() {
+                if(this.value === '__add__') {
+                    const extraName = prompt('이 방에 강제로 추가해 보낼 가상 인물의 이름을 입력하세요:');
+                    if(extraName) {
+                        const newFakeId = 'fake_' + Date.now();
+                        room.members.push(newFakeId);
+                        // 임시 친구 구조에 삽입해 데이터 바인딩 오류 방지
+                        state.friends.push({ id: newFakeId, name: extraName, status: '', avatar: '🤖' });
+                        enterChatRoom(roomId);
+                    }
+                    this.value = 'me';
+                }
             }
 
-            // 현재 시간 구하기 (오후/오전 HH:MM)
-            const now = new Date();
-            let hours = now.getHours();
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const ampm = hours >= 12 ? '오후' : '오전';
-            hours = hours % 12;
-            hours = hours ? hours : 12; 
-            const timeStr = `${ampm} ${hours}:${minutes}`;
+            renderChatMessages();
+        }
 
-            // 데이터 배열 추가
-            messages.push({
-                id: msgIdCounter++,
-                senderId: senderId,
-                senderName: senderName,
-                content: content,
-                time: timeStr
+        function closeChatRoom() {
+            document.getElementById('chat-room-screen').style.display = 'none';
+            state.currentRoomId = null;
+            renderChatList();
+        }
+
+        function renderChatMessages() {
+            const room = state.rooms.find(r => r.id === state.currentRoomId);
+            const box = document.getElementById('chat-messages-box');
+            box.innerHTML = '';
+
+            if(!room) return;
+
+            room.messages.forEach(m => {
+                const isMe = m.senderId === 'me';
+                const cls = isMe ? 'me' : 'other';
+                const nameLabel = isMe ? '' : `<div class="msg-sender">${m.senderName}</div>`;
+                
+                let bodyHtml = '';
+                if(m.type === 'text') {
+                    bodyHtml = `<span class="text-content">${m.content}</span>`;
+                } else if(m.type === 'image') {
+                    bodyHtml = `<img src="https://picsum.photos/200" class="msg-image" alt="가짜 이미지">`;
+                } else if(m.type === 'emoticon') {
+                    bodyHtml = `<div class="msg-emoticon" style="font-size:50px; text-align:center;">${m.content}</div>`;
+                }
+
+                box.innerHTML += `
+                    <div class="msg-line ${cls}">
+                        ${nameLabel}
+                        <div class="bubble-wrap">
+                            <div class="bubble">
+                                ${bodyHtml}
+                                <div class="bubble-menu">
+                                    <span onclick="editMessage('${m.id}')">수정</span> | 
+                                    <span onclick="deleteMessage('${m.id}')">삭제</span>
+                                </div>
+                            </div>
+                            <span class="msg-time">${m.time}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // 메시지 추가 핵심 로직
+        function getKakaoTime() {
+            const now = new Date();
+            let h = now.getHours();
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const ampm = h >= 12 ? '오후' : '오전';
+            h = h % 12 || 12;
+            return `${ampm} ${h}:${m}`;
+        }
+
+        function sendTextMessage() {
+            const input = document.getElementById('chat-text-input');
+            const content = input.value.trim();
+            if(!content) return;
+
+            const senderId = document.getElementById('chat-sender-select').value;
+            const room = state.rooms.find(r => r.id === state.currentRoomId);
+            
+            let senderName = '나';
+            if(senderId !== 'me') {
+                const f = state.friends.find(f => f.id === senderId);
+                const op = state.openProfiles.find(p => p.id === senderId);
+                senderName = f ? f.name : (op ? op.name : '상대방');
+            }
+
+            room.messages.push({
+                id: 'm_' + Date.now(),
+                senderId,
+                senderName,
+                type: 'text',
+                content,
+                time: getKakaoTime()
             });
 
-            contentInput.value = '';
-            renderMessages();
+            input.value = '';
+            renderChatMessages();
         }
 
-        // 메시지 삭제
-        function deleteMessage(id) {
-            messages = messages.filter(m => m.id !== id);
-            renderMessages();
+        function sendMedia(type) {
+            const room = state.rooms.find(r => r.id === state.currentRoomId);
+            const senderId = document.getElementById('chat-sender-select').value;
+            let senderName = '나';
+            if(senderId !== 'me') {
+                const f = state.friends.find(f => f.id === senderId);
+                senderName = f ? f.name : '상대방';
+            }
+
+            let content = '';
+            if(type === 'emoticon') {
+                const emoticons = ['🤣','👍','❤️','😭','행복','🎉','✨'];
+                content = emoticons[Math.floor(Math.random() * emoticons.length)];
+            }
+
+            room.messages.push({
+                id: 'm_' + Date.now(),
+                senderId,
+                senderName,
+                type,
+                content,
+                time: getKakaoTime()
+            });
+            renderChatMessages();
         }
 
-        // 메시지 수정
-        function editMessage(id) {
-            const msg = messages.find(m => m.id === id);
+        // 메시지 수정 및 삭제 조작부
+        function editMessage(msgId) {
+            const room = state.rooms.find(r => r.id === state.currentRoomId);
+            const msg = room.messages.find(m => m.id === msgId);
             if(!msg) return;
 
-            const newContent = prompt('수정할 내용을 입력하세요:', msg.content);
-            if(newContent === null) return; // 취소 클릭시
-            if(newContent.trim() === '') return alert('내용을 입력해야 합니다.');
+            if(msg.type !== 'text') {
+                alert('텍스트 형식의 대화 내용만 텍스트 수정이 가능합니다.');
+                return;
+            }
 
-            msg.content = newContent.trim();
-            renderMessages();
+            const nextText = prompt('말풍선 내용을 원하는 대로 수정하세요:', msg.content);
+            if(nextText !== null && nextText.trim() !== '') {
+                msg.content = nextText.trim();
+                renderChatMessages();
+            }
+        }
+
+        function deleteMessage(msgId) {
+            const room = state.rooms.find(r => r.id === state.currentRoomId);
+            if(confirm('이 메시지를 말풍선 목록에서 즉시 삭제할까요?')) {
+                room.messages = room.messages.filter(m => m.id !== msgId);
+                renderChatMessages();
+            }
         }
     </script>
 </body>
