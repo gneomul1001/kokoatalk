@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KakaoTalk Simulator - Advanced Profile Editor</title>
+    <title>CocoaTalk Simulator - Advanced Profile Customizer</title>
     <style>
         :root {
             --kakao-yellow: #FEE500;
@@ -13,10 +13,12 @@
             --text-main: #191919;
             --text-sub: #767676;
             --bg-light: #F9F9F9;
-            --profile-dark-bg: #8595a2; /* 1780990287591.jpeg 이미지 기반 배경색 */
+            --profile-dark-bg: #8595a2;
+            --drawer-bg: #F2F2F2;
+            --panel-dark: #222222; /* 스크린샷 기반 하단 다크 에디터 패널 색상 */
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; }
-        body { background: #eef0f3; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-main); }
+        body { background: #eef0f3; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-main); user-select: none; }
 
         /* 전체 앱 컨테이너 */
         #phone-wrapper { width: 400px; height: 780px; background: #fff; box-shadow: 0 12px 40px rgba(0,0,0,0.1); border-radius: 36px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
@@ -28,8 +30,7 @@
 
         /* 검색 바 */
         .search-container { padding: 4px 20px 12px; position: relative; }
-        .search-container input { width: 100%; padding: 9px 12px 9px 36px; border: none; background: #F0F0F0; border-radius: 8px; font-size: 14px; outline: none; transition: background 0.2s; }
-        .search-container input:focus { background: #EAEAEA; }
+        .search-container input { width: 100%; padding: 9px 12px 9px 36px; border: none; background: #F0F0F0; border-radius: 8px; font-size: 14px; outline: none; }
         .search-container::before { content: "🔍"; position: absolute; left: 32px; top: 12px; font-size: 13px; color: #999; }
 
         /* 메인 콘텐츠 영역 */
@@ -56,7 +57,6 @@
         .item-desc { font-size: 12.5px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
         .manage-btn { padding: 5px 10px; font-size: 11px; background: #F0F2F5; border: none; border-radius: 12px; cursor: pointer; color: #444; font-weight: 500; margin-left: 5px; }
-        .manage-btn:hover { background: #E4E7EC; }
 
         /* 배너 디자인 */
         .banner { margin: 8px 20px; background: #F5F7FA; border-radius: 12px; padding: 14px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
@@ -68,7 +68,7 @@
 
         /* 채팅방 모달 스크린 */
         #chat-room-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--kakao-bg); display: none; flex-direction: column; z-index: 100; }
-        .chat-header { background: rgba(0,0,0,0.03); padding: 18px 16px; display: flex; align-items: center; }
+        .chat-header { background: rgba(0,0,0,0.03); padding: 18px 16px; display: flex; align-items: center; justify-content: space-between; }
         .back-btn { font-size: 18px; cursor: pointer; margin-right: 15px; }
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         
@@ -100,52 +100,95 @@
         .media-row { display: flex; gap: 8px; padding-bottom: 2px; }
         .media-btn { font-size: 12px; background: #F5F7FA; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; color: #555; font-weight: 500; }
 
-        /* ─── [NEW] 파일 1780990287591.jpeg 구현 기반 상세 프로필 모달 ─── */
+        /* 상세 프로필 모달 */
         #profile-detail-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--profile-dark-bg); display: none; flex-direction: column; z-index: 150; color: #fff; }
         
-        /* 프로필 상단 바 */
-        .profile-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px 10px; }
+        /* 국기(태극기)를 형상화한 배경 그래픽 요소 데코 */
+        .profile-flag-bg-deco { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.15; background-image: radial-gradient(circle at center, #c0392b 25%, #2980b9 25.5%, transparent 55%); display: flex; align-items: center; justify-content: center; font-size: 120px; font-weight: bold; }
+
+        .profile-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px 10px; z-index: 2; }
         .profile-close-btn { font-size: 24px; cursor: pointer; color: #fff; opacity: 0.9; }
         .profile-edit-trigger { background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; }
-
-        /* 프로필 콘텐츠 상단 컴포넌트 (디데이, 배경음악, 스티커) */
-        .profile-top-widgets { flex: 1; padding: 20px; display: flex; flex-direction: column; position: relative; }
-        .profile-dday { font-size: 16px; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 15px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        
-        /* 음악 위젯 형태 */
-        .profile-music-widget { background: rgba(43, 39, 37, 0.75); width: 150px; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 10px;}
-        .music-title { font-size: 12px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
-        .music-artist { font-size: 11px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
-        .music-icons { display: flex; gap: 14px; margin-top: 6px; font-size: 12px; color: #ddd; }
-
-        /* 인형/MBTI 스티커 데코 */
-        .profile-sticker-deco { position: absolute; right: 20px; top: 20px; text-align: right; font-size: 12px; background: rgba(255,255,255,0.15); padding: 6px 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 2px; }
-
-        /* 프로필 메인 센터 유저 (사진, 이름, 상메) */
-        .profile-center-user { display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; text-align: center; }
-        .profile-center-avatar { width: 90px; height: 90px; border-radius: 35px; background: #fff; font-size: 45px; display: flex; justify-content: center; align-items: center; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); object-fit: cover;}
-        .profile-center-name { font-size: 20px; font-weight: bold; margin-bottom: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .profile-center-status { font-size: 13px; color: #e5e5e5; text-shadow: 0 1px 2px rgba(0,0,0,0.2); max-width: 250px; }
-
-        /* 하단 액션 버튼 독 */
-        .profile-bottom-dock { height: 75px; background: rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; }
+        .profile-top-widgets { flex: 1; padding: 20px; display: flex; flex-direction: column; position: relative; z-index: 2; }
+        .profile-dday { font-size: 16px; font-weight: bold; margin-bottom: 15px; }
+        .profile-music-widget { background: rgba(43, 39, 37, 0.75); width: 150px; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; }
+        .music-title { font-size: 12px; font-weight: bold; color: #fff; }
+        .music-artist { font-size: 11px; color: #ccc; }
+        .profile-sticker-deco { position: absolute; right: 20px; top: 20px; text-align: right; font-size: 12px; background: rgba(255,255,255,0.15); padding: 6px 10px; border-radius: 10px; }
+        .profile-center-user { display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; z-index: 2; }
+        .profile-center-avatar { width: 90px; height: 90px; border-radius: 35px; background: #fff; font-size: 45px; display: flex; justify-content: center; align-items: center; margin-bottom: 12px; }
+        .profile-center-name { font-size: 20px; font-weight: bold; margin-bottom: 6px; }
+        .profile-center-status { font-size: 13px; color: #e5e5e5; }
+        .profile-bottom-dock { height: 75px; background: rgba(0,0,0,0.15); display: flex; align-items: center; z-index: 2; }
         .profile-action-item { flex: 1; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; height: 100%; }
-        .profile-action-item:hover { background: rgba(255,255,255,0.05); }
         .dock-separator { width: 1px; height: 24px; background: rgba(255,255,255,0.2); }
+
+        /* 게시물 타임라인 영역 */
+        .post-timeline { margin-top: 10px; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; font-size: 12px; max-height: 100px; overflow-y: auto; }
+
+        /* 채팅방 내부 편의기능 전용 서랍 패널 */
+        #chat-drawer-screen { position: absolute; top: 0; right: -100%; width: 320px; height: 100%; background: var(--drawer-bg); z-index: 200; display: flex; flex-direction: column; transition: right 0.3s ease; box-shadow: -5px 0 25px rgba(0,0,0,0.15); color: #191919; }
+        #chat-drawer-screen.open { right: 0; }
+        .drawer-header { padding: 24px 16px 10px; display: flex; justify-content: space-between; align-items: center; background: var(--drawer-bg); }
+        .drawer-close { font-size: 20px; cursor: pointer; }
+        .drawer-content { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
         
-        /* 마이페이지 기본 스타일 */
+        .drawer-card { background: #fff; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+        .drawer-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .drawer-grid-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #444; }
+        .drawer-media-box { display: flex; gap: 6px; overflow-x: auto; padding-top: 4px; }
+        .drawer-media-thumb { width: 55px; height: 55px; background: #e2e5e9; border-radius: 6px; flex-shrink: 0; }
+        .drawer-member-list { display: flex; flex-direction: column; gap: 10px; }
+        .drawer-member-item { display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 500; }
+        .drawer-member-avatar { width: 32px; height: 32px; border-radius: 12px; background: #e0e0e0; display: flex; justify-content: center; align-items: center; font-size: 16px; }
+
+        /* 마이페이지 및 레이아웃 */
         .profile-card { display: flex; align-items: center; padding: 24px 20px; cursor: pointer; }
-        .profile-card:hover { background: var(--bg-light); }
-        .profile-card .big-avatar { width: 64px; height: 64px; border-radius: 24px; background: #f0f2f5; font-size: 30px; display: flex; justify-content: center; align-items: center; margin-right: 16px;}
         .wallet-banner { margin: 0 20px 16px; background: var(--kakao-yellow); border-radius: 12px; padding: 18px; font-weight: bold; display: flex; justify-content: space-between; color: #191919; }
+
+        /* ─── [NEW] 첨부 스크린샷 6개 통합 기반: 하단 배치형 프로필 수정 인터페이스 패널 ─── */
+        #profile-edit-dock-panel { position: absolute; bottom: -380px; left: 0; width: 100%; height: 360px; background: var(--panel-dark); z-index: 300; border-top-left-radius: 20px; border-top-right-radius: 20px; display: flex; flex-direction: column; transition: bottom 0.3s cubic-bezier(0.1, 0.8, 0.3, 1); color: #fff; box-shadow: 0 -8px 24px rgba(0,0,0,0.4); }
+        #profile-edit-dock-panel.open { bottom: 0; }
+        
+        .panel-header-bar { display: flex; justify-content: space-between; padding: 14px 20px; font-size: 14px; font-weight: bold; color: #aaa; border-bottom: 1px solid #333; }
+        .panel-tab-contents { flex: 1; overflow-y: auto; padding: 16px 20px; display: none; }
+        .panel-tab-contents.active { display: block; }
+
+        /* 스티커 카테고리 뷰 (19705, 19715) */
+        .sticker-category-row { display: flex; gap: 14px; font-size: 12px; color: #888; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px; }
+        .sticker-category-row span.on { color: var(--kakao-yellow); font-weight: bold; }
+        .sticker-grid-view { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; text-align: center; }
+        .sticker-item { font-size: 28px; cursor: pointer; padding: 4px; border-radius: 8px; transition: background 0.2s; }
+        .sticker-item:hover { background: #333; }
+
+        /* 배경음악 레이아웃 선택 카드 (19713) */
+        .music-theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .music-theme-card { background: #2d2d2d; border-radius: 8px; padding: 12px; text-align: center; font-size: 11px; cursor: pointer; }
+        .music-theme-card.selected { border: 2px solid var(--kakao-yellow); }
+
+        /* 디데이 서식 스택 (19711) */
+        .dday-format-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .dday-format-card { background: #2d2d2d; border-radius: 8px; padding: 14px 8px; text-align: center; font-size: 13px; font-weight: bold; cursor: pointer; }
+
+        /* 텍스트 입력창 서식 (19709) */
+        .text-input-panel-form { display: flex; flex-direction: column; gap: 10px; }
+        .text-input-panel-form input { width: 100%; background: #333; border: none; padding: 10px; border-radius: 6px; color: #fff; outline: none; font-size: 13.5px; }
+        
+        /* 기능 위젯 모음 (19707) */
+        .widget-feature-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .widget-feature-btn { background: #2d2d2d; border-radius: 8px; padding: 12px 6px; font-size: 11px; text-align: center; cursor: pointer; }
+
+        /* 하단 툴바 메뉴 탭단추 트랙 */
+        .panel-footer-toolbar { height: 56px; background: #1a1a1a; display: flex; align-items: center; justify-content: space-around; font-size: 18px; color: #888; }
+        .toolbar-tab-btn { cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        .toolbar-tab-btn.active { color: var(--kakao-yellow); }
     </style>
 </head>
 <body>
 
     <div id="phone-wrapper">
-        <!-- 상단 고정 헤더 -->
         <div class="app-header">
-            <h1 id="page-title">친구</h1>
+            <h1 id="page-title">코코아톡</h1>
             <div class="header-icons">
                 <span onclick="alert('검색 기능은 하단 검색바를 이용해주세요.')">🔍</span>
                 <span id="header-add-icon" onclick="triggerAddAction()">➕</span>
@@ -153,17 +196,13 @@
             </div>
         </div>
 
-        <!-- 통합 검색바 -->
         <div class="search-container">
             <input type="text" id="search-bar" placeholder="이름, 대화방 검색..." oninput="handleSearch()">
         </div>
 
-        <!-- 메인 콘텐츠 영역 -->
         <div class="main-content" id="main-content">
             
-            <!-- 1. 홈 탭 (친구 목록) -->
             <div id="tab-home" class="tab-panel active">
-                <!-- 내 프로필 영역 (클릭 시 이미지 1780990287591.jpeg 구조로 열림) -->
                 <div class="profile-card" onclick="openProfileDetail('me')">
                     <div class="big-avatar" id="my-home-avatar">👤</div>
                     <div>
@@ -180,24 +219,21 @@
                 <div class="item-list" id="friend-list-container"></div>
             </div>
 
-            <!-- 2. 채팅 탭 -->
             <div id="tab-chat" class="tab-panel">
                 <div class="banner" style="background:#F0F4F9;">
                     <div><strong>매일을 쿨하게, 쿨탠다드</strong><br><span style="font-size:11px; color:#888;">무탠다드 X 기안84 특가전</span></div>
                     <span>👕</span>
                 </div>
-                <div class="section-title">채팅</div>
+                <div class="section-title">채팅방 목록 (길게 누르거나 우클릭 시 편집)</div>
                 <div class="item-list" id="chat-list-container"></div>
             </div>
 
-            <!-- 3. 오픈채팅 탭 -->
             <div id="tab-openchat" class="tab-panel">
                 <div class="action-bar">
                     <button class="btn primary" onclick="createOpenProfile('my')">+ 내 오픈프로필</button>
                     <button class="btn" onclick="createOpenProfile('other')">+ 타인 오픈프로필</button>
                     <button class="btn" onclick="createOpenChatRoom()">+ 오픈채팅방 개설</button>
                 </div>
-                
                 <div class="section-title">내 오픈프로필</div>
                 <div class="item-list" id="my-open-profiles"></div>
                 <div class="section-title">다른 사람 오픈프로필</div>
@@ -206,7 +242,6 @@
                 <div class="item-list" id="open-room-list"></div>
             </div>
 
-            <!-- 4. 마이페이지 탭 -->
             <div id="tab-mypage" class="tab-panel">
                 <div class="profile-card" onclick="openProfileDetail('me')">
                     <div class="big-avatar" id="my-page-avatar">👤</div>
@@ -219,16 +254,9 @@
                     <span>talk pay 0원</span>
                     <span style="font-size:13px; font-weight:normal; color:#333;">송금 | 자산 | 결제</span>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; padding: 20px; text-align: center; font-size: 12px; font-weight: 500;">
-                    <div>🎁<br><span style="display:inline-block; margin-top:4px; color:#333;">선물하기</span></div>
-                    <div>❤️<br><span style="display:inline-block; margin-top:4px; color:#333;">받은선물</span></div>
-                    <div>⚡<br><span style="display:inline-block; margin-top:4px; color:#333;">톡딜</span></div>
-                    <div>😊<br><span style="display:inline-block; margin-top:4px; color:#333;">이모티콘</span></div>
-                </div>
             </div>
         </div>
 
-        <!-- 하단 내비게이션 탭바 -->
         <div class="bottom-nav">
             <div class="nav-item active" onclick="switchTab('home', this)">
                 <span class="icon">👤</span><span>홈</span>
@@ -244,50 +272,116 @@
             </div>
         </div>
 
-        <!-- ─── [NEW] 파일 1780990287591.jpeg 연동 상세 프로필 레이어 ─── -->
         <div id="profile-detail-screen">
+            <div class="profile-flag-bg-deco">🇰🇷</div>
+
             <div class="profile-top-bar">
                 <span class="profile-close-btn" onclick="closeProfileDetail()">✕</span>
-                <span class="profile-edit-trigger" onclick="triggerProfileEdit()">프로필 편집</span>
+                <span class="profile-edit-trigger" onclick="openAdvancedEditDock()">프로필 편집</span>
             </div>
-            
             <div class="profile-top-widgets">
-                <!-- 디데이 시스템 -->
                 <div class="profile-dday" id="detail-dday">D+8404 birth</div>
-                
-                <!-- 상단 배경 뮤직 컴포넌트 -->
                 <div class="profile-music-widget">
                     <div class="music-title" id="detail-music-title">CEREMONY</div>
                     <div class="music-artist" id="detail-music-artist">QWER</div>
-                    <div class="music-icons"><span>♡</span> <span>▷</span></div>
                 </div>
-
-                <!-- 부가 텍스트 및 스티커 데코 스페이스 -->
                 <div class="profile-sticker-deco" id="detail-sticker">
-                    <span>어휴.. 귀찮아 ☕</span>
-                    <span style="font-weight:bold; color:var(--kakao-yellow);">INTP</span>
+                    <span>어휴.. 귀찮아 ☕ (INTP)</span>
+                </div>
+                
+                <div style="margin-top:auto; font-weight:bold; font-size:13px;">게시물 타임라인</div>
+                <div class="post-timeline" id="detail-post-timeline">
+                    <div>첫 프로필 개설을 환영합니다!</div>
                 </div>
             </div>
-
             <div class="profile-center-user">
-                <!-- 중앙 유저 메인 정보 -->
                 <div class="profile-center-avatar" id="detail-avatar">👤</div>
                 <div class="profile-center-name" id="detail-name">장윤호</div>
                 <div class="profile-center-status" id="detail-status">弘益人間</div>
             </div>
-
             <div class="profile-bottom-dock">
                 <div class="profile-action-item" id="profile-chat-action">
                     <span>💬</span> <span id="profile-action-text">나와의 채팅</span>
                 </div>
                 <div class="dock-separator"></div>
-                <div class="profile-action-item" onclick="alert('새 게시물 기능이 준비 중입니다.')">
-                    <span>➕</span> <span>새 게시물</span>
+                <div class="profile-action-item" onclick="addNewPostTimeline()">
+                    <span>➕</span> <span>새 게시물 추가</span>
                 </div>
             </div>
+
+            <div id="profile-edit-dock-panel">
+                <div class="panel-header-bar">
+                    <span>프로필 꾸미기 요소 선택</span>
+                    <span style="cursor:pointer; color:var(--kakao-yellow);" onclick="closeAdvancedEditDock()">완료</span>
+                </div>
+                
+                <div class="panel-tab-contents active" id="edit-tab-sticker">
+                    <div class="sticker-category-row">
+                        <span class="on">시즌널</span><span>스포츠</span><span>활동</span><span>프렌즈</span><span>사랑</span><span>동물</span>
+                    </div>
+                    <div class="sticker-grid-view">
+                        <div class="sticker-item" onclick="applyWidgetChange('sticker', '🏄🏄')">🏄</div>
+                        <div class="sticker-item" onclick="applyWidgetChange('sticker', '🍹 맛나구마')">🍹</div>
+                        <div class="sticker-item" onclick="applyWidgetChange('sticker', '🍉 여름맛')">🍉</div>
+                        <div class="sticker-item" onclick="applyWidgetChange('sticker', '🍦 녹는다')">🍦</div>
+                        <div class="sticker-item" onclick="applyWidgetChange('sticker', '라이언 🦁')">🦁</div>
+                        <div class="sticker-item" onclick="applyWidgetChange('sticker', '어피치 🍑')">🍑</div>
+                        <div class="sticker-item" onclick="applyWidgetChange('sticker', '니니즈 🐧')">🐧</div>
+                        <div class="sticker-item" onclick="applyWidgetChange('sticker', '야호 🥳')">🥳</div>
+                    </div>
+                </div>
+
+                <div class="panel-tab-contents" id="edit-tab-features">
+                    <div class="widget-feature-list">
+                        <div class="widget-feature-btn" onclick="applyWidgetChange('sticker', '🔗 Link 연동 활성화')">🔗 Link</div>
+                        <div class="widget-feature-btn" onclick="applyWidgetChange('sticker', '❤️ 9,999+ Like')">❤️ 좋아요</div>
+                        <div class="widget-feature-btn" onclick="applyWidgetChange('sticker', '💬 TODAY 999')">📈 투데이</div>
+                        <div class="widget-feature-btn" onclick="applyWidgetChange('avatar', '🦊')">🦊 아바타 변경</div>
+                        <div class="widget-feature-btn" onclick="applyWidgetChange('avatar', '🚂')">🚂 열차 아바타</div>
+                        <div class="widget-feature-btn" onclick="applyWidgetChange('avatar', '👤')">👤 기본 아바타</div>
+                    </div>
+                </div>
+
+                <div class="panel-tab-contents" id="edit-tab-text">
+                    <div class="text-input-panel-form">
+                        <input type="text" id="edit-input-name-form" placeholder="수정할 유저 이름 입력...">
+                        <input type="text" id="edit-input-status-form" placeholder="수정할 상태메시지 문구 입력...">
+                        <button class="btn primary" style="padding:10px; border-radius:6px;" onclick="applyTextChangesDirect()">텍스트 정보 동기화 적용</button>
+                    </div>
+                </div>
+
+                <div class="panel-tab-contents" id="edit-tab-dday">
+                    <div class="dday-format-grid">
+                        <div class="dday-format-card" onclick="applyWidgetChange('dday', 'D-365')">D-365</div>
+                        <div class="dday-format-card" onclick="applyWidgetChange('dday', '365일째')">365일째</div>
+                        <div class="dday-format-card" onclick="applyWidgetChange('dday', 'D+8404 birth')">기본 생일</div>
+                        <div class="dday-format-card" onclick="applyWidgetChange('dday', '❤+365')">❤+365</div>
+                        <div class="dday-format-card" onclick="applyWidgetChange('dday', '2026.06.09')">오늘 날짜</div>
+                        <div class="dday-format-card" onclick="applyWidgetChange('dday', 'D-0')">D-Day</div>
+                    </div>
+                </div>
+
+                <div class="panel-tab-contents" id="edit-tab-music">
+                    <div class="music-theme-grid">
+                        <div class="music-theme-card selected" onclick="applyMusicTheme('CEREMONY', 'QWER')">🎵 스킨 A<br><small>CEREMONY</small></div>
+                        <div class="music-theme-card" onclick="applyMusicTheme('Home', '박효신')">🎵 스킨 B<br><small>Home</small></div>
+                        <div class="music-theme-card" onclick="applyMusicTheme('야생화', '박효신')">🎵 스킨 C<br><small>야생화</small></div>
+                        <div class="music-theme-card" onclick="applyMusicTheme('여행', '볼빨간사춘기')">🎵 스킨 D<br><small>여행</small></div>
+                        <div class="music-theme-card" onclick="applyMusicTheme('음악 없음', '')">❌ 음악 제거</div>
+                    </div>
+                </div>
+
+                <div class="panel-footer-toolbar">
+                    <div class="toolbar-tab-btn active" onclick="switchEditorTab(0, this)">⭐</div>
+                    <div class="toolbar-tab-btn" onclick="switchEditorTab(1, this)">👆</div>
+                    <div class="toolbar-tab-btn" onclick="switchEditorTab(2, this)"> T </div>
+                    <div class="toolbar-tab-btn" onclick="switchEditorTab(3, this)">📅</div>
+                    <div class="toolbar-tab-btn" onclick="switchEditorTab(4, this)">🎵</div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- 계층 이동식 오버레이 채팅방 스크린 -->
         <div id="chat-room-screen">
             <div class="chat-header">
                 <span class="back-btn" onclick="closeChatRoom()">◀</span>
@@ -295,6 +389,7 @@
                     <span id="current-room-title" style="font-weight:700; font-size:16.5px;">채팅방</span>
                     <span id="current-room-count" style="font-size:13px; color:#555; margin-left:4px;"></span>
                 </div>
+                <span style="font-size: 20px; cursor: pointer; padding: 0 5px;" onclick="toggleDrawer(true)">☰</span>
             </div>
             <div class="chat-messages" id="chat-messages-box"></div>
             <div class="chat-input-area">
@@ -308,48 +403,70 @@
                     <button class="btn primary" style="flex:none; width:54px; padding:9px 0; border-radius:18px;" onclick="sendTextMessage()">전송</button>
                 </div>
             </div>
-        </div>
 
+            <div id="chat-drawer-screen">
+                <div class="drawer-header">
+                    <span style="font-weight:bold; font-size:16px;">채팅방 서랍</span>
+                    <span class="drawer-close" onclick="toggleDrawer(false)">✕</span>
+                </div>
+                <div class="drawer-content">
+                    <div class="drawer-card">
+                        <div style="font-size:13px; font-weight:bold; color: #2ecc71;">🖼️ 사진/동영상</div>
+                        <div class="drawer-media-box">
+                            <div class="drawer-media-thumb"></div>
+                            <div class="drawer-media-thumb"></div>
+                            <div class="drawer-media-thumb"></div>
+                        </div>
+                    </div>
+                    <div class="drawer-card">
+                        <div class="drawer-grid">
+                            <div class="drawer-grid-item">📂 파일</div>
+                            <div class="drawer-grid-item">🔗 링크</div>
+                            <div class="drawer-grid-item">📅 일정</div>
+                            <div class="drawer-grid-item">📢 공지</div>
+                        </div>
+                    </div>
+                    <div class="drawer-card">
+                        <div style="font-size:13px; font-weight:bold; margin-bottom:4px;">👥 대화상대</div>
+                        <div class="drawer-member-list" id="drawer-member-list-box"></div>
+                        <button class="btn" style="font-size:11px; padding:6px;" onclick="inviteMemberDirect()">+ 대화상대 초대하기</button>
+                    </div>
+                    <div class="drawer-card" style="margin-top:auto; cursor:pointer;" onclick="exitChatRoomDirect()">
+                        <div style="color:#e74c3c; font-weight:bold; font-size:13px; text-align:center;">🚪 채팅방 나가기</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // 핵심 상태 관리 데이터베이스 모델
         let state = {
-            // '나(본인)' 프로필 데이터 모델 확장 기입
             me: {
-                id: 'me',
-                name: '장윤호',
-                status: '弘益人間',
-                avatar: '🚂',
-                dday: 'D+8404 birth',
-                musicTitle: 'CEREMONY',
-                musicArtist: 'QWER',
-                stickerText: '어휴.. 귀찮아 ☕ (INTP)'
+                id: 'me', name: '장윤호', status: '弘益人間', avatar: '🚂',
+                dday: 'D+8404 birth', musicTitle: 'CEREMONY', musicArtist: 'QWER', stickerText: '어휴.. 귀찮아 ☕ (INTP)',
+                posts: ['첫 프로필 개설을 환영합니다!']
             },
             friends: [
-                { id: 'f1', name: '은지누나', status: '오늘도 파이팅!', avatar: '👩', dday: 'D+365', musicTitle: 'Home', musicArtist: '박효신', stickerText: '행복하자' },
-                { id: 'f2', name: '현지누나', status: '여행 중 ✈️', avatar: '☀️', dday: 'D-20', musicTitle: '여행', musicArtist: '볼빨간사춘기', stickerText: 'ENFP' },
-                { id: 'f3', name: '진현이형', status: '업무 집중 모드', avatar: '🧑', dday: 'D+1200', musicTitle: '야생화', musicArtist: '박효신', stickerText: '열공' },
-                { id: 'f4', name: '아버지', status: '홈플대란 대기중', avatar: '👨', dday: '행복한 우리집', musicTitle: '동반자', musicArtist: '태진아', stickerText: '건강제일' }
+                { id: 'f1', name: '김진우', status: 'https://youtube.com/...', avatar: '👤', dday: 'D+365', musicTitle: 'Home', musicArtist: '박효신', stickerText: '열공', posts: ['열심히 공부합시다!'] },
+                { id: 'f2', name: '은지누나', status: '오늘도 파이팅!', avatar: '👩', dday: 'D+100', musicTitle: '야생화', musicArtist: '박효신', stickerText: '파이팅', posts: [] }
             ],
             openProfiles: [
-                { id: 'op1', type: 'my', name: '개발자 장윤호', desc: '프론트엔드 질문 환영', avatar: '💻' },
-                { id: 'op2', type: 'other', name: '고대딩 성인수다방장', desc: '매너 채팅 필수', avatar: '🐱' }
+                { id: 'op1', type: 'my', name: '개발자 장윤호', desc: '프론트엔드 질문 환영', avatar: '💻' }
             ],
             rooms: [
-                { id: 'r1', type: 'normal', title: '가족 단톡방', members: ['me', 'f4', 'f1'], messages: [
-                    { id: 'm1', senderId: 'f4', senderName: '아버지', type: 'text', content: '오늘 저녁 뭐 먹니?', time: '오후 12:17' }
-                ]}
+                { id: 'r1', type: 'normal', title: '김진우', members: ['me', 'f1'], messages: [
+                    { id: 'm1', senderId: 'f1', senderName: '김진우', type: 'text', content: 'https://youtube.com/watch?v=aKTnulm3HBg', time: '오후 3:15' }
+                ]},
+                { id: 'r2', type: 'open', title: '고대딩 성인수다방', members: ['me'], messages: [] }
             ],
             currentRoomId: null,
             searchQuery: '',
-            currentActiveProfileId: null // 현재 열려있는 프로필의 고유 ID 타겟팅 변수
+            currentActiveProfileId: null
         };
 
         window.onload = () => { renderAll(); };
 
         function renderAll() {
-            // 내 프로필 홈화면 및 마이페이지 동기 반영 동적 주입
             document.getElementById('my-home-name').innerText = state.me.name + " (나)";
             document.getElementById('my-home-status').innerText = state.me.status;
             document.getElementById('my-home-avatar').innerText = state.me.avatar;
@@ -366,13 +483,26 @@
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             document.getElementById(`tab-${tabName}`).classList.add('active');
             element.classList.add('active');
+            
             const titleMap = { home: '친구', chat: '채팅', openchat: '오픈채팅', mypage: '더보기' };
-            document.getElementById('page-title').innerText = titleMap[tabName];
+            // 요구사항 1 변형: 전체 페이지 타이틀을 상시 코코아톡으로 유지하거나 탭 성격을 맞춰줍니다.
+            document.getElementById('page-title').innerText = tabName === 'home' ? '코코아톡' : titleMap[tabName];
         }
 
         function triggerAddAction() {
-            if (document.querySelector('.tab-panel.active').id === 'tab-home') addNewFriend();
-            else alert('친구 추가 기능은 홈 탭에서 작동합니다.');
+            const activeTabId = document.querySelector('.tab-panel.active').id;
+            if (activeTabId === 'tab-chat') {
+                createChatRoomDirect();
+            } else if (activeTabId === 'tab-home') {
+                addNewFriend();
+            }
+        }
+
+        function createChatRoomDirect() {
+            const title = prompt('새로 개설할 일반 대화방 이름을 입력하세요:');
+            if(!title) return;
+            state.rooms.push({ id: 'r_' + Date.now(), type: 'normal', title, members: ['me'], messages: [] });
+            renderChatList();
         }
 
         function handleSearch() {
@@ -391,46 +521,83 @@
                             <div class="item-name">${f.name}</div>
                             <div class="item-desc">${f.status}</div>
                         </div>
-                        <button class="manage-btn" onclick="event.stopPropagation(); manageFriend('${f.id}');">삭제</button>
                     </div>
                 `;
             });
         }
 
         function addNewFriend() {
-            const name = prompt('추가할 친구의 이름을 입력하세요:');
+            const name = prompt('추가할 친구의 이름:');
             if(!name) return;
-            const status = prompt('상태 메시지를 입력하세요:', '');
-            state.friends.push({ 
-                id: 'f_' + Date.now(), name, status: status || '', avatar: '🦊',
-                dday: 'D-Day', musicTitle: '음악 없음', musicArtist: '아티스트', stickerText: '기본 스티커'
-            });
+            state.friends.push({ id: 'f_' + Date.now(), name, status: '상태메시지', avatar: '👤', dday: 'D-day', musicTitle: '', musicArtist: '', stickerText: '', posts: [] });
             renderFriends();
         }
 
-        function manageFriend(id) {
-            if(confirm('이 친구를 명단에서 삭제하시겠습니까?')) {
-                state.friends = state.friends.filter(f => f.id !== id);
-                renderFriends();
+        function renderChatList() {
+            const container = document.getElementById('chat-list-container');
+            container.innerHTML = '';
+            state.rooms.filter(r => r.title.toLowerCase().includes(state.searchQuery)).forEach(r => {
+                const lastMsg = r.messages[r.messages.length - 1];
+                let desc = '대화 내역이 없습니다.'; let time = '';
+                if(lastMsg) {
+                    desc = lastMsg.type === 'text' ? lastMsg.content : `[${lastMsg.type}]`;
+                    time = lastMsg.time;
+                }
+
+                const itemHTML = `
+                    <div class="list-item" onclick="enterChatRoom('${r.id}')" oncontextmenu="handleChatLongClick('${r.id}', event);" id="chat-item-${r.id}">
+                        <div class="profile-img">${r.type === 'open' ? '🌐' : '👥'}</div>
+                        <div class="item-info">
+                            <div class="item-name-row">
+                                <span class="item-name">${r.title}</span>
+                                <span class="item-count">${r.members.length}</span>
+                            </div>
+                            <div class="item-desc">${desc}</div>
+                        </div>
+                        <div style="font-size:10px; color:#aaa; align-self:flex-start; margin-top:4px;">${time}</div>
+                    </div>
+                `;
+                container.innerHTML += itemHTML;
+            });
+        }
+
+        function handleChatLongClick(roomId, event) {
+            if(event) event.preventDefault();
+            const room = state.rooms.find(r => r.id === roomId);
+            if(!room) return;
+            const mode = prompt(`[${room.title}] 편집 메뉴\n1. 방 이름 수정\n2. 채팅방 삭제`);
+            if(mode === '1') {
+                const nextTitle = prompt('방이름 수정:', room.title);
+                if(nextTitle) room.title = nextTitle;
+                renderChatList();
+            } else if(mode === '2') {
+                state.rooms = state.rooms.filter(r => r.id !== roomId);
+                renderChatList();
             }
         }
 
-        /* ─── 상세 프로필 인터페이스 엔진 제어 시스템 (파일 1780990287591.jpeg 완벽 연동) ─── */
         function openProfileDetail(id) {
             state.currentActiveProfileId = id;
             let targetData = id === 'me' ? state.me : state.friends.find(f => f.id === id);
             if(!targetData) return;
 
-            // DOM 맵핑 바인딩
-            document.getElementById('detail-dday').innerText = targetData.dday || 'D+0000 birth';
-            document.getElementById('detail-music-title').innerText = targetData.musicTitle || '노래 제목';
-            document.getElementById('detail-music-artist').innerText = targetData.musicArtist || '아티스트';
-            document.getElementById('detail-sticker').innerHTML = `<span>${targetData.stickerText || '상태 데코'}</span>`;
+            document.getElementById('detail-dday').innerText = targetData.dday || '';
+            document.getElementById('detail-music-title').innerText = targetData.musicTitle || '지정된 음악 없음';
+            document.getElementById('detail-music-artist').innerText = targetData.musicArtist || '';
+            document.getElementById('detail-sticker').innerHTML = `<span>${targetData.stickerText || ''}</span>`;
             document.getElementById('detail-avatar').innerText = targetData.avatar || '👤';
             document.getElementById('detail-name').innerText = targetData.name;
             document.getElementById('detail-status').innerText = targetData.status || '';
 
-            // 하단 버튼 구성 유동성 분기
+            // 타임라인 로드
+            const tlBox = document.getElementById('detail-post-timeline');
+            tlBox.innerHTML = '';
+            if(targetData.posts && targetData.posts.length > 0) {
+                targetData.posts.forEach(p => { tlBox.innerHTML += `<div>• ${p}</div>`; });
+            } else {
+                tlBox.innerHTML = '<div style="color:#ddd;">등록된 새 게시물이 없습니다.</div>';
+            }
+
             const actionText = document.getElementById('profile-action-text');
             const chatAction = document.getElementById('profile-chat-action');
             if(id === 'me') {
@@ -446,141 +613,129 @@
 
         function closeProfileDetail() {
             document.getElementById('profile-detail-screen').style.display = 'none';
-            state.currentActiveProfileId = null;
+            closeAdvancedEditDock();
         }
 
-        // 핵심 기능 요구 사항: 친구의 모든 요소를 가변 팝업 편집 윈도우 인터페이스화
-        function triggerProfileEdit() {
+        /* ─── [NEW 조작부] 하단 프로필 에디터 컨트롤 센터 스크립트 엔진 ─── */
+        function openAdvancedEditDock() {
             const id = state.currentActiveProfileId;
             let targetData = id === 'me' ? state.me : state.friends.find(f => f.id === id);
-            if(!targetData) return;
+            
+            // 기존 텍스트 폼 기본 데이터 셋 채우기
+            document.getElementById('edit-input-name-form').value = targetData.name;
+            document.getElementById('edit-input-status-form').value = targetData.status;
 
-            // 차례대로 요소를 개별 가변 입력받음
-            const nextName = prompt('수정할 이름을 입력하세요:', targetData.name);
-            if(nextName) targetData.name = nextName;
+            document.getElementById('profile-edit-dock-panel').classList.add('open');
+        }
 
-            const nextStatus = prompt('수정할 상태 메시지를 입력하세요:', targetData.status);
-            if(nextStatus !== null) targetData.status = nextStatus;
+        function closeAdvancedEditDock() {
+            document.getElementById('profile-edit-dock-panel').classList.remove('open');
+        }
 
-            const nextAvatar = prompt('수정할 프로필 아바타(이모지 등)를 입력하세요:', targetData.avatar);
-            if(nextAvatar) targetData.avatar = nextAvatar;
+        function switchEditorTab(index, btnElement) {
+            document.querySelectorAll('.toolbar-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.panel-tab-contents').forEach(c => c.classList.remove('active'));
+            
+            btnElement.classList.add('active');
+            const targetTabs = ['edit-tab-sticker', 'edit-tab-features', 'edit-tab-text', 'edit-tab-dday', 'edit-tab-music'];
+            document.getElementById(targetTabs[index]).classList.add('active');
+        }
 
-            const nextDday = prompt('수정할 디데이 텍스트를 입력하세요:', targetData.dday);
-            if(nextDday !== null) targetData.dday = nextDday;
+        // 스티커, 디데이, 아바타 클릭 시 즉시 프로필 모델에 동적 주입 및 리렌더링
+        function applyWidgetChange(field, value) {
+            const id = state.currentActiveProfileId;
+            let targetData = id === 'me' ? state.me : state.friends.find(f => f.id === id);
+            
+            if(field === 'sticker') targetData.stickerText = value;
+            else if(field === 'dday') targetData.dday = value;
+            else if(field === 'avatar') targetData.avatar = value;
 
-            const nextMTitle = prompt('수정할 배경음악 제목을 입력하세요:', targetData.musicTitle);
-            if(nextMTitle !== null) targetData.musicTitle = nextMTitle;
-
-            const nextMArtist = prompt('수정할 배경음악 가수를 입력하세요:', targetData.musicArtist);
-            if(nextMArtist !== null) targetData.musicArtist = nextMArtist;
-
-            const nextSticker = prompt('수정할 우측 데코 스티커 문구를 입력하세요:', targetData.stickerText);
-            if(nextSticker !== null) targetData.stickerText = nextSticker;
-
-            // 전체 다시 그리기 연동 동기화 및 렌더링 리프레시
             renderAll();
-            openProfileDetail(id); // 현재 창 데이터 업데이트 리로드
+            openProfileDetail(id);
+            openAdvancedEditDock(); // 편집창 유지
         }
 
-        /* ─── 기존 채팅 및 오픈채팅 로직 유지 연동 파트 ─── */
-        function renderChatList() {
-            const container = document.getElementById('chat-list-container');
-            container.innerHTML = '';
-            state.rooms.filter(r => r.title.toLowerCase().includes(state.searchQuery)).forEach(r => {
-                const lastMsg = r.messages[r.messages.length - 1];
-                let desc = '대화 내역이 없습니다.'; let time = '';
-                if(lastMsg) {
-                    desc = lastMsg.type === 'text' ? lastMsg.content : `[${lastMsg.type}]`;
-                    time = lastMsg.time;
-                }
-                container.innerHTML += `
-                    <div class="list-item" onclick="enterChatRoom('${r.id}')">
-                        <div class="profile-img">${r.type === 'open' ? '🌐' : '👥'}</div>
-                        <div class="item-info">
-                            <div class="item-name-row">
-                                <span class="item-name">${r.title}</span>
-                                <span class="item-count">${r.members.length}</span>
-                            </div>
-                            <div class="item-desc">${desc}</div>
-                        </div>
-                        <div style="font-size:10px; color:#aaa; align-self:flex-start; margin-top:4px;">${time}</div>
-                    </div>
-                `;
+        function applyMusicTheme(title, artist) {
+            const id = state.currentActiveProfileId;
+            let targetData = id === 'me' ? state.me : state.friends.find(f => f.id === id);
+            
+            targetData.musicTitle = title;
+            targetData.musicArtist = artist;
+
+            renderAll();
+            openProfileDetail(id);
+            openAdvancedEditDock();
+        }
+
+        function applyTextChangesDirect() {
+            const id = state.currentActiveProfileId;
+            let targetData = id === 'me' ? state.me : state.friends.find(f => f.id === id);
+            
+            const n = document.getElementById('edit-input-name-form').value.trim();
+            const s = document.getElementById('edit-input-status-form').value.trim();
+            
+            if(n) targetData.name = n;
+            targetData.status = s;
+
+            renderAll();
+            openProfileDetail(id);
+            openAdvancedEditDock();
+            alert('텍스트 정보가 동기화되었습니다.');
+        }
+
+        function addNewPostTimeline() {
+            const id = state.currentActiveProfileId;
+            let targetData = id === 'me' ? state.me : state.friends.find(f => f.id === id);
+            const postContent = prompt('타임라인에 등록할 새 게시물 내용:');
+            if(!postContent) return;
+            if(!targetData.posts) targetData.posts = [];
+            targetData.posts.unshift(postContent);
+            openProfileDetail(id);
+        }
+
+        /* ─── 채팅 및 서랍 레이어 시스템 연동 유지 ─── */
+        function toggleDrawer(openState) {
+            const drawer = document.getElementById('chat-drawer-screen');
+            if(openState) { renderDrawerMembers(); drawer.classList.add('open'); }
+            else { drawer.classList.remove('open'); }
+        }
+
+        function renderDrawerMembers() {
+            const room = state.rooms.find(r => r.id === state.currentRoomId);
+            const box = document.getElementById('drawer-member-list-box');
+            box.innerHTML = `
+                <div class="drawer-member-item"><div class="drawer-member-avatar">${state.me.avatar}</div><div>${state.me.name} (나)</div></div>
+            `;
+            if(!room) return;
+            room.members.forEach(mId => {
+                if(mId === 'me') return;
+                const f = state.friends.find(f => f.id === mId);
+                if(f) box.innerHTML += `<div class="drawer-member-item"><div class="drawer-member-avatar">${f.avatar}</div><div>${f.name}</div></div>`;
             });
         }
 
-        function createOpenChatRoom() {
-            const title = prompt('생성할 방 제목을 입력하세요:');
-            if(!title) return;
-            const type = confirm('오픈채팅방으로 만드시겠습니까? (취소 시 일반 단톡방)') ? 'open' : 'normal';
-            state.rooms.push({ id: 'r_' + Date.now(), type, title, members: ['me'], messages: [] });
-            renderChatList();
-            renderOpenChatTab();
-        }
-
-        function renderOpenChatTab() {
-            const myContainer = document.getElementById('my-open-profiles');
-            const otherContainer = document.getElementById('other-open-profiles');
-            const roomContainer = document.getElementById('open-room-list');
-
-            myContainer.innerHTML = ''; otherContainer.innerHTML = ''; roomContainer.innerHTML = '';
-
-            state.openProfiles.forEach(p => {
-                const html = `
-                    <div class="list-item">
-                        <div class="profile-img">${p.avatar}</div>
-                        <div class="item-info">
-                            <div class="item-name">${p.name}</div>
-                            <div class="item-desc">${p.desc}</div>
-                        </div>
-                        <button class="manage-btn" onclick="manageOpenProfile('${p.id}')">관리</button>
-                    </div>
-                `;
-                if(p.type === 'my') myContainer.innerHTML += html;
-                else otherContainer.innerHTML += html;
-            });
-
-            state.rooms.filter(r => r.type === 'open').forEach(r => {
-                roomContainer.innerHTML += `
-                    <div class="list-item" onclick="enterChatRoom('${r.id}')">
-                        <div class="profile-img">💬</div>
-                        <div class="item-info">
-                            <div class="item-name">${r.title} <span class="item-count">${r.members.length}</span></div>
-                            <div class="item-desc">오픈채팅 활성화 상태</div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function createOpenProfile(type) {
-            const name = prompt(`${type === 'my' ? '내' : '상대방'} 오픈프로필 이름:`);
+        function inviteMemberDirect() {
+            const room = state.rooms.find(r => r.id === state.currentRoomId);
+            const name = prompt('초대할 사람 이름:');
             if(!name) return;
-            const desc = prompt('소개글:');
-            state.openProfiles.push({ id: 'op_' + Date.now(), type, name, desc: desc || '', avatar: type === 'my' ? '👑' : '👤' });
-            renderOpenChatTab();
+            const newId = 'f_' + Date.now();
+            state.friends.push({ id: newId, name, status: '초대됨', avatar: '🤖', posts: [] });
+            room.members.push(newId);
+            renderDrawerMembers();
+            enterChatRoom(room.id);
         }
 
-        function manageOpenProfile(id) {
-            const prof = state.openProfiles.find(p => p.id === id);
-            if(!prof) return;
-            const action = prompt(`[${prof.name}] 설정\n1. 수정\n2. 삭제`);
-            if(action === '1') {
-                const n = prompt('이름 수정:', prof.name);
-                const d = prompt('소개글 수정:', prof.desc);
-                if(n) prof.name = n;
-                if(d !== null) prof.desc = d;
-                renderOpenChatTab();
-            } else if(action === '2') {
-                state.openProfiles = state.openProfiles.filter(p => p.id !== id);
-                renderOpenChatTab();
+        function exitChatRoomDirect() {
+            if(confirm('채팅방을 나갈까요?')) {
+                state.rooms = state.rooms.filter(r => r.id !== state.currentRoomId);
+                toggleDrawer(false); closeChatRoom();
             }
         }
 
         function openDirectChat(friendId) {
-            const friend = state.friends.find(f => f.id === friendId);
             let room = state.rooms.find(r => r.type === 'normal' && r.members.includes(friendId) && r.members.length === 2);
             if(!room) {
+                const friend = state.friends.find(f => f.id === friendId);
                 room = { id: 'r_' + Date.now(), type: 'normal', title: friend.name, members: ['me', friendId], messages: [] };
                 state.rooms.push(room);
             }
@@ -597,27 +752,11 @@
 
             const select = document.getElementById('chat-sender-select');
             select.innerHTML = '<option value="me">나(본인)</option>';
-            
             room.members.forEach(mId => {
                 if(mId === 'me') return;
                 const f = state.friends.find(f => f.id === mId);
-                const op = state.openProfiles.find(p => p.id === mId);
-                select.innerHTML += `<option value="${mId}">${f ? f.name : (op ? op.name : '참여자')}</option>`;
+                if(f) select.innerHTML += `<option value="${mId}">${f.name}</option>`;
             });
-
-            select.innerHTML += `<option value="__add__">[+] 대화상대 강제추가</option>`;
-            select.onchange = function() {
-                if(this.value === '__add__') {
-                    const extraName = prompt('가상 인물 이름 입력:');
-                    if(extraName) {
-                        const newFakeId = 'fake_' + Date.now();
-                        room.members.push(newFakeId);
-                        state.friends.push({ id: newFakeId, name: extraName, status: '', avatar: '🤖' });
-                        enterChatRoom(roomId);
-                    }
-                    this.value = 'me';
-                }
-            };
             renderChatMessages();
         }
 
@@ -630,30 +769,20 @@
         function renderChatMessages() {
             const room = state.rooms.find(r => r.id === state.currentRoomId);
             const box = document.getElementById('chat-messages-box');
-            box.innerHTML = '';
-            if(!room) return;
+            box.innerHTML = ''; if(!room) return;
 
             room.messages.forEach(m => {
                 const isMe = m.senderId === 'me';
                 const cls = isMe ? 'me' : 'other';
-                const nameLabel = isMe ? '' : `<div class="msg-sender">${m.senderName}</div>`;
-                
-                let bodyHtml = '';
-                if(m.type === 'text') bodyHtml = `<span class="text-content">${m.content}</span>`;
-                else if(m.type === 'image') bodyHtml = `<img src="https://picsum.photos/200" class="msg-image" alt="이미지">`;
-                else if(m.type === 'emoticon') bodyHtml = `<div class="msg-emoticon" style="font-size:50px; text-align:center;">${m.content}</div>`;
+                let bodyHtml = `<span class="text-content">${m.content}</span>`;
+                if(m.type === 'image') bodyHtml = `<img src="https://picsum.photos/200" class="msg-image">`;
+                else if(m.type === 'emoticon') bodyHtml = `<div class="msg-emoticon" style="font-size:50px;">${m.content}</div>`;
 
                 box.innerHTML += `
                     <div class="msg-line ${cls}">
-                        ${nameLabel}
+                        ${isMe ? '' : `<div class="msg-sender">${m.senderName}</div>`}
                         <div class="bubble-wrap">
-                            <div class="bubble">
-                                ${bodyHtml}
-                                <div class="bubble-menu">
-                                    <span onclick="editMessage('${m.id}')">수정</span> | 
-                                    <span onclick="deleteMessage('${m.id}')">삭제</span>
-                                </div>
-                            </div>
+                            <div class="bubble">${bodyHtml}</div>
                             <span class="msg-time">${m.time}</span>
                         </div>
                     </div>
@@ -663,71 +792,40 @@
         }
 
         function getKakaoTime() {
-            const now = new Date();
-            let h = now.getHours();
-            const m = String(now.getMinutes()).padStart(2, '0');
-            const ampm = h >= 12 ? '오후' : '오전';
-            h = h % 12 || 12;
-            return `${ampm} ${h}:${m}`;
+            const now = new Date(); let h = now.getHours(); const m = String(now.getMinutes()).padStart(2, '0');
+            return `${h >= 12 ? '오후' : '오전'} ${h % 12 || 12}:${m}`;
         }
 
         function sendTextMessage() {
-            const input = document.getElementById('chat-text-input');
-            const content = input.value.trim();
-            if(!content) return;
-
+            const input = document.getElementById('chat-text-input'); const content = input.value.trim(); if(!content) return;
             const senderId = document.getElementById('chat-sender-select').value;
             const room = state.rooms.find(r => r.id === state.currentRoomId);
-            let senderName = '나';
-            if(senderId !== 'me') {
-                const f = state.friends.find(f => f.id === senderId);
-                const op = state.openProfiles.find(p => p.id === senderId);
-                senderName = f ? f.name : (op ? op.name : '상대방');
-            }
-
+            let senderName = senderId === 'me' ? '나' : (state.friends.find(f => f.id === senderId)?.name || '상대방');
             room.messages.push({ id: 'm_' + Date.now(), senderId, senderName, type: 'text', content, time: getKakaoTime() });
-            input.value = '';
-            renderChatMessages();
+            input.value = ''; renderChatMessages();
         }
 
         function sendMedia(type) {
             const room = state.rooms.find(r => r.id === state.currentRoomId);
             const senderId = document.getElementById('chat-sender-select').value;
-            let senderName = '나';
-            if(senderId !== 'me') {
-                const f = state.friends.find(f => f.id === senderId);
-                senderName = f ? f.name : '상대방';
-            }
-
-            let content = '';
-            if(type === 'emoticon') {
-                const emoticons = ['🤣','👍','❤️','😭','🔥','🎉','✨'];
-                content = emoticons[Math.floor(Math.random() * emoticons.length)];
-            }
-
+            let senderName = senderId === 'me' ? '나' : (state.friends.find(f => f.id === senderId)?.name || '상대방');
+            let content = type === 'emoticon' ? '🥰' : '';
             room.messages.push({ id: 'm_' + Date.now(), senderId, senderName, type, content, time: getKakaoTime() });
             renderChatMessages();
         }
 
-        function editMessage(msgId) {
-            const room = state.rooms.find(r => r.id === state.currentRoomId);
-            const msg = room.messages.find(m => m.id === msgId);
-            if(!msg || msg.type !== 'text') return alert('텍스트 대화만 수정 가능합니다.');
-
-            const nextText = prompt('수정할 내용 입력:', msg.content);
-            if(nextText !== null && nextText.trim() !== '') {
-                msg.content = nextText.trim();
-                renderChatMessages();
-            }
+        function renderOpenChatTab() {
+            const myContainer = document.getElementById('my-open-profiles');
+            const roomContainer = document.getElementById('open-room-list');
+            myContainer.innerHTML = ''; roomContainer.innerHTML = '';
+            state.openProfiles.forEach(p => {
+                myContainer.innerHTML += `<div class="list-item"><div class="profile-img">${p.avatar}</div><div class="item-info"><div class="item-name">${p.name}</div></div></div>`;
+            });
+            state.rooms.filter(r => r.type === 'open').forEach(r => {
+                roomContainer.innerHTML += `<div class="list-item" onclick="enterChatRoom('${r.id}')"><div class="profile-img">💬</div><div class="item-info"><div class="item-name">${r.title}</div></div></div>`;
+            });
         }
-
-        function deleteMessage(msgId) {
-            const room = state.rooms.find(r => r.id === state.currentRoomId);
-            if(confirm('이 메시지를 삭제할까요?')) {
-                room.messages = room.messages.filter(m => m.id !== msgId);
-                renderChatMessages();
-            }
-        }
+        function createOpenProfile(type) {}
     </script>
 </body>
 </html>
