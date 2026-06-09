@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KakaoTalk Simulator - Borderless Clean UI</title>
+    <title>코코아톡</title>
     <style>
         :root {
             --kakao-yellow: #FEE500;
@@ -239,26 +239,26 @@
     <script>
         let state = {
             friends: [
-                { id: 'f1', name: '은지누나', status: '오늘도 파이팅!', avatar: '👩' },
-                { id: 'f2', name: '현지누나', status: '여행 중 ✈️', avatar: '☀️' },
-                { id: 'f3', name: '진현이형', status: '업무 집중 모드', avatar: '🧑' },
-                { id: 'f4', name: '아버지', status: '홈플대란 대기중', avatar: '👨' }
+                { id: 'f1', name: '예빈이', status: '오늘도 파이팅!', avatar: '👩' },
+                { id: 'f2', name: '채원이', status: '여행 중 ✈️', avatar: '☀️' },
+                { id: 'f3', name: '경수', status: '업무 집중 모드', avatar: '🧑' },
+                { id: 'f4', name: '영빈이', status: 'ㅎㅇㅌ', avatar: '👨' }
             ],
             openProfiles: [
                 { id: 'op1', type: 'my', name: '개발자 장윤호', desc: '프론트엔드 질문 환영', avatar: '💻' },
                 { id: 'op2', type: 'other', name: '고대딩 성인수다방장', desc: '매너 채팅 필수', avatar: '🐱' },
-                { id: 'op3', type: 'other', name: '청춘소설 서포터즈', desc: '공식 운영 프로필입니다.', avatar: '📚' }
+                { id: 'op3', type: 'other', name: '박총책 사모방', desc: '공식 운영 프로필입니다.', avatar: '📚' }
             ],
             rooms: [
-                { id: 'r1', type: 'normal', title: '가족 단톡방', members: ['me', 'f4', 'f1'], messages: [
-                    { id: 'm1', senderId: 'f4', senderName: '아버지', type: 'text', content: '오늘 저녁 뭐 먹니?', time: '오후 12:17' },
-                    { id: 'm2', senderId: 'me', senderName: '나', type: 'text', content: '삼겹살 먹고 싶어요!', time: '오후 12:19' }
+                { id: 'r1', type: 'normal', title: '친구 단톡방', members: ['me', 'f4', 'f1'], messages: [
+                    { id: 'm1', senderId: 'f4', senderName: '경수', type: 'text', content: '오늘 저녁 뭐 먹니?', time: '오후 12:17' },
+                    { id: 'm2', senderId: 'me', senderName: '나', type: 'text', content: '삼겹살 먹고 싶어!', time: '오후 12:19' }
                 ]},
                 { id: 'r2', type: 'open', title: '고대딩 성인수다방', members: ['me', 'op2'], messages: [
                     { id: 'm3', senderId: 'op2', senderName: '고대딩 성인수다방장', type: 'text', content: '안녕하세요! 반갑습니다.', time: '오후 4:03' }
                 ]},
-                { id: 'r3', type: 'open', title: '동서대 졸업생 정보공유방', members: ['me', 'op3'], messages: [
-                    { id: 'm4', senderId: 'op3', senderName: '청춘소설 서포터즈', type: 'text', content: '일경험 공고 확인 부탁드립니다.', time: '오전 11:20' }
+                { id: 'r3', type: 'open', title: '남북대 졸업생 정보공유방', members: ['me', 'op3'], messages: [
+                    { id: 'm4', senderId: 'op3', senderName: '동아리', type: 'text', content: '일경험 공고 확인 부탁드립니다.', time: '오전 11:20' }
                 ]}
             ],
             currentRoomId: null,
