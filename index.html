@@ -446,7 +446,7 @@
     <script>
         const defaultState = {
             me: {
-                id: 'me', name: '장윤호', status: '弘益人間', avatar: '🚂', isCustomImg: false,
+                id: 'me', name: '장윤호', status: '弘익인간', avatar: '🚂', isCustomImg: false,
                 dday: 'D+8404 birth', musicTitle: 'CEREMONY', musicArtist: 'QWER', stickerText: '어휴.. 귀찮아 ☕ (INTP)',
                 posts: ['첫 프로필 개설을 환영합니다!']
             },
@@ -462,7 +462,7 @@
                 { id: 'r1', type: 'normal', title: '김진우', members: ['me', 'f1'], messages: [
                     { id: 'm1', senderId: 'f1', senderName: '김진우', type: 'text', content: 'https://youtube.com/watch?v=aKTnulm3HBg', time: '오후 3:15' }
                 ]},
-                { id: 'r2', type: 'open', title: '고대딩 성인수다방', members: ['me'], messages: [] }
+                { id: 'r2', type: 'open', title: '고대딩 성인수다방', members: ['me'], profileType: 'me', profileId: 'me', messages: [] }
             ],
             currentRoomId: null,
             searchQuery: '',
@@ -842,11 +842,15 @@
                 item.setAttribute('onclick', `enterChatRoom('${r.id}')`);
                 item.addEventListener('contextmenu', (e) => handleOpenRoomLongClick(r.id, e));
                 
+                // 어떤 프로필로 생성했는지 디버그용 태그 표시
+                let badgeText = r.profileType === 'open' ? '오픈프로필' : '기본프로필';
+
                 item.innerHTML = `
                     <div class="profile-img">🌐</div>
                     <div class="item-info">
                         <div class="item-name-row">
                             <span class="item-name">${r.title}</span>
+                            <span style="font-size:10px; background:#e4e6eb; padding:2px 6px; border-radius:4px; color:#555;">${badgeText}</span>
                             <span class="item-count">${r.members.length}</span>
                         </div>
                         <div class="item-desc">${r.messages.length > 0 ? (r.messages[r.messages.length - 1].type === 'text' ? r.messages[r.messages.length - 1].content : `[${r.messages[r.messages.length - 1].type}]`) : '대화 내역이 없습니다.'}</div>
@@ -959,12 +963,58 @@
             }
         }
 
+        // 개설 시 프로필 선택 분기가 연동되도록 전면 수정된 함수
         function createOpenChatRoom() {
             const title = prompt('생성할 오픈채팅방의 방제를 입력하세요:');
             if(!title) return;
-            state.rooms.push({ id: 'r_' + Date.now(), type: 'open', title, members: ['me'], messages: [] });
+
+            // 1. 프로필 종류 선택 인터페이스 호출
+            let myOpenProfiles = state.openProfiles.filter(p => p.type === 'my');
+            let profileSelectionPrompt = `참여할 프로필 유형의 번호를 선택하세요:\n1. 기본 프로필 (이름: ${state.me.name})`;
+            
+            myOpenProfiles.forEach((p, idx) => {
+                profileSelectionPrompt += `\n${idx + 2}. 오픈프로필 - [ ${p.name} ]`;
+            });
+
+            const choice = prompt(profileSelectionPrompt);
+            if(!choice) return;
+
+            let selectedProfileType = 'normal'; // normal(기본) 또는 open(오픈프로필)
+            let selectedProfileId = 'me';       // 바인딩될 프로필 고유 ID값
+            let selectedProfileName = state.me.name;
+
+            if (choice === '1') {
+                selectedProfileType = 'normal';
+                selectedProfileId = 'me';
+                selectedProfileName = state.me.name;
+            } else {
+                const index = parseInt(choice) - 2;
+                if (!isNaN(index) && myOpenProfiles[index]) {
+                    selectedProfileType = 'open';
+                    selectedProfileId = myOpenProfiles[index].id;
+                    selectedProfileName = myOpenProfiles[index].name;
+                } else {
+                    alert('잘못된 선택입니다. 기본 프로필로 자동 지정됩니다.');
+                    selectedProfileType = 'normal';
+                    selectedProfileId = 'me';
+                    selectedProfileName = state.me.name;
+                }
+            }
+
+            // 2. 방 데이터 구조에 profileType 및 profileId 정의 후 주입
+            state.rooms.push({ 
+                id: 'r_' + Date.now(), 
+                type: 'open', 
+                title: title, 
+                members: ['me'], 
+                profileType: selectedProfileType, // 방장의 프로필 유형 기록
+                profileId: selectedProfileId,      // 할당된 ID 연동
+                messages: [] 
+            });
+
             saveState();
             renderOpenChatTab();
+            alert(`[${title}] 오픈채팅방이 '${selectedProfileName}' 프로필로 성공적으로 개설되었습니다.`);
         }
 
         function toggleDrawer(openState) {
@@ -978,15 +1028,28 @@
             const box = document.getElementById('drawer-member-list-box');
             box.innerHTML = '';
             
+            // 본인 프로필 영역 출력 (개설 시 선택한 프로필로 이름 바인딩 처리)
             const myItem = document.createElement('div');
             myItem.className = 'drawer-member-item';
             const myAvatar = document.createElement('div');
             myAvatar.className = 'drawer-member-avatar';
-            renderAvatarElement(myAvatar, state.me);
-            const myName = document.createElement('div');
-            myName.innerText = `${state.me.name} (나)`;
-            myItem.appendChild(myAvatar);
-            myItem.appendChild(myName);
+
+            // 선택한 프로필에 맞춘 아바타 데이터 매핑
+            if(room && room.type === 'open' && room.profileType === 'open') {
+                const targetOpenProfile = state.openProfiles.find(p => p.id === room.profileId);
+                renderAvatarElement(myAvatar, targetOpenProfile);
+                
+                const myName = document.createElement('div');
+                myName.innerText = targetOpenProfile ? `${targetOpenProfile.name} (나)` : `${state.me.name} (나)`;
+                myItem.appendChild(myAvatar);
+                myItem.appendChild(myName);
+            } else {
+                renderAvatarElement(myAvatar, state.me);
+                const myName = document.createElement('div');
+                myName.innerText = `${state.me.name} (나)`;
+                myItem.appendChild(myAvatar);
+                myItem.appendChild(myName);
+            }
             box.appendChild(myItem);
 
             if(!room) return;
@@ -1048,7 +1111,15 @@
             document.getElementById('current-room-count').innerText = room.members.length;
 
             const select = document.getElementById('chat-sender-select');
-            select.innerHTML = '<option value="me">나(본인)</option>';
+            
+            // 채팅방 진입 시 발신자 선택 목록 가공 (오픈프로필 지정 개설인 경우 닉네임 오버라이딩 적용)
+            let activeSenderLabel = '나(본인)';
+            if(room.type === 'open' && room.profileType === 'open') {
+                const targetOpenProfile = state.openProfiles.find(p => p.id === room.profileId);
+                if(targetOpenProfile) activeSenderLabel = `${targetOpenProfile.name} (나)`;
+            }
+            
+            select.innerHTML = `<option value="me">${activeSenderLabel}</option>`;
             room.members.forEach(mId => {
                 if(mId === 'me') return;
                 const f = state.friends.find(f => f.id === mId);
@@ -1135,7 +1206,18 @@
             const input = document.getElementById('chat-text-input'); const content = input.value.trim(); if(!content) return;
             const senderId = document.getElementById('chat-sender-select').value;
             const room = state.rooms.find(r => r.id === state.currentRoomId);
-            let senderName = senderId === 'me' ? '나' : (state.friends.find(f => f.id === senderId)?.name || '상대방');
+            
+            let senderName = '나';
+            if (senderId === 'me') {
+                // 오픈프로필로 참여중인 방일 경우 발신자 이름 세팅 분기 처리
+                if(room.type === 'open' && room.profileType === 'open') {
+                    const targetOpenProfile = state.openProfiles.find(p => p.id === room.profileId);
+                    if(targetOpenProfile) senderName = targetOpenProfile.name;
+                }
+            } else {
+                senderName = state.friends.find(f => f.id === senderId)?.name || '상대방';
+            }
+
             room.messages.push({ id: 'm_' + Date.now(), senderId, senderName, type: 'text', content, time: getKakaoTime() });
             input.value = ''; 
             saveState();
@@ -1145,7 +1227,17 @@
         function sendMedia(type) {
             const room = state.rooms.find(r => r.id === state.currentRoomId);
             const senderId = document.getElementById('chat-sender-select').value;
-            let senderName = senderId === 'me' ? '나' : (state.friends.find(f => f.id === senderId)?.name || '상대방');
+            
+            let senderName = '나';
+            if (senderId === 'me') {
+                if(room.type === 'open' && room.profileType === 'open') {
+                    const targetOpenProfile = state.openProfiles.find(p => p.id === room.profileId);
+                    if(targetOpenProfile) senderName = targetOpenProfile.name;
+                }
+            } else {
+                senderName = state.friends.find(f => f.id === senderId)?.name || '상대방';
+            }
+
             let content = type === 'emoticon' ? '🥰' : '';
             room.messages.push({ id: 'm_' + Date.now(), senderId, senderName, type, content, time: getKakaoTime() });
             saveState();
