@@ -15,7 +15,7 @@
             --bg-light: #F9F9F9;
             --profile-dark-bg: #8595a2;
             --drawer-bg: #F2F2F2;
-            --panel-dark: #222222; /* 스크린샷 기반 하단 다크 에디터 패널 색상 */
+            --panel-dark: #222222; 
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; }
         body { background: #eef0f3; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-main); user-select: none; }
@@ -80,7 +80,8 @@
         
         .bubble-wrap { display: flex; align-items: flex-end; gap: 5px; width: 100%; }
         .me .bubble-wrap { flex-direction: row-reverse; }
-        .bubble { padding: 9px 12px; border-radius: 10px; font-size: 14px; word-break: break-all; position: relative; }
+        .bubble { padding: 9px 12px; border-radius: 10px; font-size: 14px; word-break: break-all; position: relative; cursor: pointer; transition: filter 0.2s; }
+        .bubble:hover { filter: brightness(0.95); }
         .me .bubble { background: var(--my-bubble); border-top-right-radius: 0; }
         .other .bubble { background: var(--other-bubble); border-top-left-radius: 0; }
         
@@ -91,7 +92,6 @@
         /* 상세 프로필 모달 */
         #profile-detail-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--profile-dark-bg); display: none; flex-direction: column; z-index: 150; color: #fff; }
         
-        /* 국기(태극기)를 형상화한 배경 그래픽 요소 데코 */
         .profile-flag-bg-deco { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.15; background-image: radial-gradient(circle at center, #c0392b 25%, #2980b9 25.5%, transparent 55%); display: flex; align-items: center; justify-content: center; font-size: 120px; font-weight: bold; }
 
         .profile-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px 10px; z-index: 2; }
@@ -105,13 +105,11 @@
         .profile-sticker-deco { position: absolute; right: 20px; top: 20px; text-align: right; font-size: 12px; background: rgba(255,255,255,0.15); padding: 6px 10px; border-radius: 10px; }
         .profile-center-user { display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; z-index: 2; }
         
-        /* 이미지 업로드/드래그앤드롭 기능을 위한 아바타 스타일 래퍼 */
         .profile-center-avatar { width: 90px; height: 90px; border-radius: 35px; background: #fff; font-size: 45px; display: flex; justify-content: center; align-items: center; margin-bottom: 12px; position: relative; cursor: pointer; overflow: hidden; border: 2px dashed transparent; background-size: cover; background-position: center; transition: all 0.3s; }
         .profile-center-avatar.dragover { border-color: var(--kakao-yellow); background-color: rgba(254, 229, 0, 0.2); }
         .profile-center-avatar .upload-hint { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.6); color: #fff; font-size: 9px; text-align: center; padding: 2px 0; opacity: 0; transition: opacity 0.2s; }
         .profile-center-avatar:hover .upload-hint { opacity: 1; }
 
-        /* 홈/마이페이지 메인 상단 아바타 스케일 가공 */
         .big-avatar { width: 50px; height: 50px; border-radius: 18px; background: #eceff3; display: flex; justify-content: center; align-items: center; font-size: 24px; margin-right: 14px; background-size: cover; background-position: center; overflow: hidden; }
 
         .profile-center-name { font-size: 20px; font-weight: bold; margin-bottom: 6px; }
@@ -123,7 +121,7 @@
         /* 게시물 타임라인 영역 */
         .post-timeline { margin-top: 10px; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; font-size: 12px; max-height: 100px; overflow-y: auto; }
 
-        /* 채팅방 내부 편의기능 전용 서랍 패널 */
+        /* 서랍 패널 */
         #chat-drawer-screen { position: absolute; top: 0; right: -100%; width: 320px; height: 100%; background: var(--drawer-bg); z-index: 200; display: flex; flex-direction: column; transition: right 0.3s ease; box-shadow: -5px 0 25px rgba(0,0,0,0.15); color: #191919; }
         #chat-drawer-screen.open { right: 0; }
         .drawer-header { padding: 24px 16px 10px; display: flex; justify-content: space-between; align-items: center; background: var(--drawer-bg); }
@@ -139,11 +137,11 @@
         .drawer-member-item { display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 500; }
         .drawer-member-avatar { width: 32px; height: 32px; border-radius: 12px; background: #e0e0e0; display: flex; justify-content: center; align-items: center; font-size: 16px; }
 
-        /* 마이페이지 및 레이아웃 */
+        /* 마이페이지 레이아웃 */
         .profile-card { display: flex; align-items: center; padding: 24px 20px; cursor: pointer; }
         .wallet-banner { margin: 0 20px 16px; background: var(--kakao-yellow); border-radius: 12px; padding: 18px; font-weight: bold; display: flex; justify-content: space-between; color: #191919; }
 
-        /* ─── 하단 배치형 프로필 수정 인터페이스 패널 ─── */
+        /* 프로필 수정 에디터 패널 */
         #profile-edit-dock-panel { position: absolute; bottom: -380px; left: 0; width: 100%; height: 360px; background: var(--panel-dark); z-index: 300; border-top-left-radius: 20px; border-top-right-radius: 20px; display: flex; flex-direction: column; transition: bottom 0.3s cubic-bezier(0.1, 0.8, 0.3, 1); color: #fff; box-shadow: 0 -8px 24px rgba(0,0,0,0.4); }
         #profile-edit-dock-panel.open { bottom: 0; }
         
@@ -151,37 +149,38 @@
         .panel-tab-contents { flex: 1; overflow-y: auto; padding: 16px 20px; display: none; }
         .panel-tab-contents.active { display: block; }
 
-        /* 스티커 카테고리 뷰 */
         .sticker-category-row { display: flex; gap: 14px; font-size: 12px; color: #888; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px; }
         .sticker-category-row span.on { color: var(--kakao-yellow); font-weight: bold; }
         .sticker-grid-view { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; text-align: center; }
         .sticker-item { font-size: 28px; cursor: pointer; padding: 4px; border-radius: 8px; transition: background 0.2s; }
         .sticker-item:hover { background: #333; }
 
-        /* 배경음악 레이아웃 선택 카드 */
         .music-theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .music-theme-card { background: #2d2d2d; border-radius: 8px; padding: 12px; text-align: center; font-size: 11px; cursor: pointer; }
         .music-theme-card.selected { border: 2px solid var(--kakao-yellow); }
 
-        /* 디데이 서식 스택 */
         .dday-format-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .dday-format-card { background: #2d2d2d; border-radius: 8px; padding: 14px 8px; text-align: center; font-size: 13px; font-weight: bold; cursor: pointer; }
 
-        /* 텍스트 입력창 서식 */
         .text-input-panel-form { display: flex; flex-direction: column; gap: 10px; }
         .text-input-panel-form input { width: 100%; background: #333; border: none; padding: 10px; border-radius: 6px; color: #fff; outline: none; font-size: 13.5px; }
         
-        /* 기능 위젯 모음 */
         .widget-feature-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .widget-feature-btn { background: #2d2d2d; border-radius: 8px; padding: 12px 6px; font-size: 11px; text-align: center; cursor: pointer; }
 
-        /* 하단 툴바 메뉴 탭단추 트랙 */
         .panel-footer-toolbar { height: 56px; background: #1a1a1a; display: flex; align-items: center; justify-content: space-around; font-size: 18px; color: #888; }
         .toolbar-tab-btn { cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
         .toolbar-tab-btn.active { color: var(--kakao-yellow); }
 
-        /* 인라인 아이템 제거 및 관리 버튼 래퍼 가공 */
         .item-action-wrap { display: flex; gap: 6px; margin-left: auto; }
+
+        /* 채팅 입력 창 */
+        .chat-input-area { background: #fff; padding: 10px; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #eef0f3; }
+        .media-row { display: flex; gap: 8px; }
+        .media-btn { flex: 1; padding: 6px; font-size: 11px; background: #f0f2f5; border: none; border-radius: 6px; cursor: pointer; color: #555; }
+        .input-row { display: flex; gap: 8px; align-items: center; }
+        .input-row select { padding: 8px; font-size: 12px; border-radius: 8px; border: 1px solid #ddd; outline: none; background: #fff; max-width: 90px; }
+        .input-row input { flex: 1; padding: 9px 12px; border-radius: 18px; border: 1px solid #ddd; outline: none; font-size: 13.5px; }
     </style>
 </head>
 <body>
@@ -240,7 +239,7 @@
                 <div class="item-list" id="my-open-profiles"></div>
                 <div class="section-title">다른 사람 오픈프로필 (클릭시 관리/편집/삭제)</div>
                 <div class="item-list" id="other-open-profiles"></div>
-                <div class="section-title">오픈채팅방 목록</div>
+                <div class="section-title">오픈채팅방 목록 (길게 누르거나 우클릭 시 편집)</div>
                 <div class="item-list" id="open-room-list"></div>
             </div>
 
@@ -316,7 +315,7 @@
 
             <div id="profile-edit-dock-panel">
                 <div class="panel-header-bar">
-                    <span>프로필 꾸미기 요소 선택</span>
+                    <span>오픈프로필 꾸미기 요소 선택</span>
                     <span style="cursor:pointer; color:var(--kakao-yellow);" onclick="closeAdvancedEditDock()">완료</span>
                 </div>
                 
@@ -445,7 +444,6 @@
     </div>
 
     <script>
-        // 초기 기본 백업 데이터 정의
         const defaultState = {
             me: {
                 id: 'me', name: '장윤호', status: '弘益人間', avatar: '🚂', isCustomImg: false,
@@ -473,7 +471,6 @@
 
         let state = {};
 
-        // ─── [CORE SYSTEM] 로컬 스토리지 로드 및 세이브 엔진 ───
         function loadState() {
             const savedData = localStorage.getItem('COCOATALK_SIM_DATA');
             if (savedData) {
@@ -501,7 +498,6 @@
         };
 
         function renderAll() {
-            // 아바타 렌더러 분기 처리기 적용 (이모지 vs Base64 커스텀 이미지)
             renderAvatarElement(document.getElementById('my-home-avatar'), state.me);
             renderAvatarElement(document.getElementById('my-page-avatar'), state.me);
 
@@ -514,7 +510,6 @@
             renderOpenChatTab();
         }
 
-        // 아바타 전용 렌더링 범용 함수
         function renderAvatarElement(element, data) {
             if (!element) return;
             if (data && data.isCustomImg) {
@@ -622,7 +617,7 @@
             if(event) event.preventDefault();
             const room = state.rooms.find(r => r.id === roomId);
             if(!room) return;
-            const mode = prompt(`[${room.title}] 편집 메뉴\n1. 방 이름 수정\n2. 채팅방 삭제`);
+            const mode = prompt(`[${room.title}] 일반 대화방 메뉴\n1. 방 이름 수정\n2. 채팅방 삭제`);
             if(mode === '1') {
                 const nextTitle = prompt('방이름 수정:', room.title);
                 if(nextTitle) room.title = nextTitle;
@@ -746,7 +741,7 @@
             
             if(n) targetData.name = n;
             if(targetData.type) {
-                targetData.desc = s; // 오픈프로필 대응 레일
+                targetData.desc = s; 
             } else {
                 targetData.status = s;
             }
@@ -769,7 +764,6 @@
             openProfileDetail(id);
         }
 
-        // ─── [NEW FEATURE 레일] 파일 업로드 및 드래그 앤 드롭 핵심 비즈니스 엔진 ───
         function triggerProfileFilePicker() {
             document.getElementById('profile-file-hidden-input').click();
         }
@@ -779,21 +773,27 @@
             if (file) processProfileImageFile(file);
         }
 
-        function handleAvatarDragOver(e) {
-            e.preventDefault();
-            e.currentTarget.classList.add('dragover');
+        if(typeof handleAvatarDragOver !== 'function') {
+            window.handleAvatarDragOver = function(e) {
+                e.preventDefault();
+                e.currentTarget.classList.add('dragover');
+            }
         }
 
-        function handleAvatarDragLeave(e) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('dragover');
+        if(typeof handleAvatarDragLeave !== 'function') {
+            window.handleAvatarDragLeave = function(e) {
+                e.preventDefault();
+                e.currentTarget.classList.remove('dragover');
+            }
         }
 
-        function handleAvatarDrop(e) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file) processProfileImageFile(file);
+        if(typeof handleAvatarDrop !== 'function') {
+            window.handleAvatarDrop = function(e) {
+                e.preventDefault();
+                e.currentTarget.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file) processProfileImageFile(file);
+            }
         }
 
         function processProfileImageFile(file) {
@@ -819,7 +819,6 @@
             reader.readAsDataURL(file);
         }
 
-        // ─── [NEW FEATURE 레일] 오픈채팅 프로필 추가 / 수정 / 삭제 관리 파이프라인 ───
         function renderOpenChatTab() {
             const myContainer = document.getElementById('my-open-profiles');
             const otherContainer = document.getElementById('other-open-profiles');
@@ -829,26 +828,49 @@
             otherContainer.innerHTML = ''; 
             roomContainer.innerHTML = '';
 
-            // 내 오픈 프로필 렌더링
             state.openProfiles.filter(p => p.type === 'my' && p.name.toLowerCase().includes(state.searchQuery)).forEach(p => {
                 myContainer.appendChild(createOpenProfileItemNode(p));
             });
 
-            // 타인 오픈 프로필 렌더링
             state.openProfiles.filter(p => p.type === 'other' && p.name.toLowerCase().includes(state.searchQuery)).forEach(p => {
                 otherContainer.appendChild(createOpenProfileItemNode(p));
             });
 
-            // 오픈채팅방 목록 렌더링
             state.rooms.filter(r => r.type === 'open' && r.title.toLowerCase().includes(state.searchQuery)).forEach(r => {
-                roomContainer.innerHTML += `
-                    <div class="list-item" onclick="enterChatRoom('${r.id}')">
-                        <div class="profile-img">🌐</div>
-                        <div class="item-info">
-                            <div class="item-name">${r.title}</div>
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.setAttribute('onclick', `enterChatRoom('${r.id}')`);
+                item.addEventListener('contextmenu', (e) => handleOpenRoomLongClick(r.id, e));
+                
+                item.innerHTML = `
+                    <div class="profile-img">🌐</div>
+                    <div class="item-info">
+                        <div class="item-name-row">
+                            <span class="item-name">${r.title}</span>
+                            <span class="item-count">${r.members.length}</span>
                         </div>
-                    </div>`;
+                        <div class="item-desc">${r.messages.length > 0 ? (r.messages[r.messages.length - 1].type === 'text' ? r.messages[r.messages.length - 1].content : `[${r.messages[r.messages.length - 1].type}]`) : '대화 내역이 없습니다.'}</div>
+                    </div>
+                `;
+                roomContainer.appendChild(item);
             });
+        }
+
+        function handleOpenRoomLongClick(roomId, event) {
+            if(event) event.preventDefault();
+            const room = state.rooms.find(r => r.id === roomId);
+            if(!room) return;
+            const mode = prompt(`[${room.title}] 오픈채팅방 메뉴\n1. 방제 수정\n2. 오픈채팅방 완전히 삭제`);
+            if(mode === '1') {
+                const nextTitle = prompt('오픈채팅방 방제 수정:', room.title);
+                if(nextTitle) room.title = nextTitle;
+                saveState();
+                renderOpenChatTab();
+            } else if(mode === '2') {
+                state.rooms = state.rooms.filter(r => r.id !== roomId);
+                saveState();
+                renderOpenChatTab();
+            }
         }
 
         function createOpenProfileItemNode(p) {
@@ -945,7 +967,6 @@
             renderOpenChatTab();
         }
 
-        // ─── 서랍 및 인프라 대화방 로직 레일 ───
         function toggleDrawer(openState) {
             const drawer = document.getElementById('chat-drawer-screen');
             if(openState) { renderDrawerMembers(); drawer.classList.add('open'); }
@@ -1040,6 +1061,7 @@
             document.getElementById('chat-room-screen').style.display = 'none';
             state.currentRoomId = null;
             renderChatList();
+            renderOpenChatTab();
         }
 
         function renderChatMessages() {
@@ -1054,17 +1076,54 @@
                 if(m.type === 'image') bodyHtml = `<img src="https://picsum.photos/200" class="msg-image">`;
                 else if(m.type === 'emoticon') bodyHtml = `<div class="msg-emoticon" style="font-size:50px;">${m.content}</div>`;
 
-                box.innerHTML += `
-                    <div class="msg-line ${cls}">
-                        ${isMe ? '' : `<div class="msg-sender">${m.senderName}</div>`}
-                        <div class="bubble-wrap">
-                            <div class="bubble">${bodyHtml}</div>
-                            <span class="msg-time">${m.time}</span>
-                        </div>
+                const msgLineNode = document.createElement('div');
+                msgLineNode.className = `msg-line ${cls}`;
+                
+                let senderMarkup = isMe ? '' : `<div class="msg-sender">${m.senderName}</div>`;
+                
+                msgLineNode.innerHTML = `
+                    ${senderMarkup}
+                    <div class="bubble-wrap">
+                        <div class="bubble" id="msg-bubble-${m.id}">${bodyHtml}</div>
+                        <span class="msg-time">${m.time}</span>
                     </div>
                 `;
+
+                const bubbleElement = msgLineNode.querySelector('.bubble');
+                bubbleElement.addEventListener('click', (e) => handleMessageAction(m.id, e));
+                bubbleElement.addEventListener('contextmenu', (e) => { e.preventDefault(); handleMessageAction(m.id, e); });
+
+                box.appendChild(msgLineNode);
             });
             box.scrollTop = box.scrollHeight;
+        }
+
+        function handleMessageAction(msgId, event) {
+            if(event) event.stopPropagation();
+            const room = state.rooms.find(r => r.id === state.currentRoomId);
+            if(!room) return;
+            const msg = room.messages.find(m => m.id === msgId);
+            if(!msg) return;
+
+            const mode = prompt(`[메시지 관리 인터페이스]\n원하시는 작업 번호를 입력하세요:\n1. 메시지 내용 수정(텍스트 타입 전용)\n2. 메시지 영구 삭제`);
+            if(mode === '1') {
+                if(msg.type !== 'text') {
+                    alert('미디어 메시지 또는 이모티콘은 텍스트 변경이 불가능합니다.');
+                    return;
+                }
+                const nextContent = prompt('수정할 대화 내용을 입력하세요:', msg.content);
+                if(nextContent !== null && nextContent.trim() !== '') {
+                    msg.content = nextContent.trim();
+                    saveState();
+                    renderChatMessages();
+                }
+            } else if(mode === '2') {
+                if(confirm('이 메시지를 삭제하시겠습니까? (복구 불가능)')) {
+                    room.messages = room.messages.filter(m => m.id !== msgId);
+                    saveState();
+                    renderChatMessages();
+                }
+            }
         }
 
         function getKakaoTime() {
