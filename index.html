@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>코코아톡</title>
+    <title>KakaoTalk Simulator - Advanced Profile Editor</title>
     <style>
         :root {
             --kakao-yellow: #FEE500;
@@ -13,19 +13,20 @@
             --text-main: #191919;
             --text-sub: #767676;
             --bg-light: #F9F9F9;
+            --profile-dark-bg: #8595a2; /* 1780990287591.jpeg 이미지 기반 배경색 */
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; }
         body { background: #eef0f3; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-main); }
 
-        /* 전체 앱 컨테이너 (테두리를 없애고 은은한 그림자만 적용) */
+        /* 전체 앱 컨테이너 */
         #phone-wrapper { width: 400px; height: 780px; background: #fff; box-shadow: 0 12px 40px rgba(0,0,0,0.1); border-radius: 36px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
         
-        /* 상단 네비게이션 헤더 (선 없음) */
+        /* 상단 네비게이션 헤더 */
         .app-header { padding: 24px 20px 10px; display: flex; justify-content: space-between; align-items: center; background: #fff; }
         .app-header h1 { font-size: 24px; font-weight: bold; letter-spacing: -0.5px; }
         .header-icons { display: flex; gap: 16px; font-size: 19px; cursor: pointer; }
 
-        /* 검색 바 (배경색을 조금 더 부드럽게 가다듬음) */
+        /* 검색 바 */
         .search-container { padding: 4px 20px 12px; position: relative; }
         .search-container input { width: 100%; padding: 9px 12px 9px 36px; border: none; background: #F0F0F0; border-radius: 8px; font-size: 14px; outline: none; transition: background 0.2s; }
         .search-container input:focus { background: #EAEAEA; }
@@ -36,13 +37,13 @@
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
 
-        /* 하단 탭바 (상단 구분선을 없애고 소프트한 배경 음영 처리) */
+        /* 하단 탭바 */
         .bottom-nav { height: 64px; display: flex; background: #FDFDFD; box-shadow: 0 -2px 10px rgba(0,0,0,0.03); }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #666; cursor: pointer; gap: 4px; }
         .nav-item .icon { font-size: 22px; }
         .nav-item.active { color: #000; font-weight: bold; }
 
-        /* 리스트 항목 스타일 (구분선 제거, 면 분할 방식) */
+        /* 리스트 항목 스타일 */
         .section-title { font-size: 12px; color: var(--text-sub); padding: 16px 20px 6px; font-weight: 500; }
         .item-list { display: flex; flex-direction: column; }
         .list-item { display: flex; align-items: center; padding: 12px 20px; cursor: pointer; transition: background 0.2s; position: relative; }
@@ -54,18 +55,16 @@
         .item-count { font-size: 13px; color: #ff4b4b; font-weight: 500; }
         .item-desc { font-size: 12.5px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        /* 버튼을 둥글고 자연스러운 칩(Chip) 형태로 변경 */
-        .manage-btn { padding: 5px 10px; font-size: 11px; background: #F0F2F5; border: none; border-radius: 12px; cursor: pointer; color: #444; font-weight: 500; }
+        .manage-btn { padding: 5px 10px; font-size: 11px; background: #F0F2F5; border: none; border-radius: 12px; cursor: pointer; color: #444; font-weight: 500; margin-left: 5px; }
         .manage-btn:hover { background: #E4E7EC; }
 
-        /* 배너 디자인 (선 없이 면으로 깔끔하게 채움) */
+        /* 배너 디자인 */
         .banner { margin: 8px 20px; background: #F5F7FA; border-radius: 12px; padding: 14px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
 
         /* 오픈채팅 탭 상단 액션 바 */
         .action-bar { padding: 10px 20px; display: flex; gap: 8px; }
         .btn { background: #F0F2F5; border: none; padding: 10px 12px; font-size: 12px; border-radius: 10px; cursor: pointer; font-weight: 600; flex: 1; text-align: center; color: #333; }
         .btn.primary { background: var(--kakao-yellow); color: #191919; }
-        .btn:hover { opacity: 0.9; }
 
         /* 채팅방 모달 스크린 */
         #chat-room-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--kakao-bg); display: none; flex-direction: column; z-index: 100; }
@@ -73,7 +72,7 @@
         .back-btn { font-size: 18px; cursor: pointer; margin-right: 15px; }
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         
-        /* 메시지 레이아웃 (그림자를 걷어내고 플랫하게 가다듬음) */
+        /* 메시지 레이아웃 */
         .msg-line { display: flex; flex-direction: column; max-width: 75%; position: relative; }
         .msg-line.me { align-self: flex-end; align-items: flex-end; }
         .msg-line.other { align-self: flex-start; }
@@ -85,35 +84,66 @@
         .me .bubble { background: var(--my-bubble); border-top-right-radius: 0; }
         .other .bubble { background: var(--other-bubble); border-top-left-radius: 0; }
         
-        /* 미디어 메시지 */
         .msg-image { max-width: 120px; max-height: 120px; border-radius: 10px; cursor: pointer; }
         .msg-emoticon { width: 80px; height: 80px; cursor: pointer; }
         .msg-time { font-size: 9px; color: #555; white-space: nowrap; }
 
-        /* 말풍선 호버 메뉴 (테두리 제거 및 라운드 처리) */
         .bubble-menu { display: none; position: absolute; top: -34px; background: rgba(40,40,40,0.95); color: #fff; font-size: 11px; padding: 5px 10px; border-radius: 8px; gap: 8px; z-index: 10; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .bubble:hover .bubble-menu { display: flex; }
         .bubble-menu span { cursor: pointer; }
-        .bubble-menu span:hover { color: var(--kakao-yellow); }
 
-        /* 채팅 입력창 영역 (선 없는 깔끔한 디자인) */
+        /* 채팅 입력창 */
         .chat-input-area { background: #fff; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 -2px 15px rgba(0,0,0,0.02); }
         .input-row { display: flex; gap: 8px; align-items: center; }
-        .input-row select { padding: 8px; font-size: 12px; border-radius: 8px; border: none; background: #F0F2F5; color: #333; outline: none; font-weight: 500; }
+        .input-row select { padding: 8px; font-size: 12px; border-radius: 8px; border: none; background: #F0F2F5; color: #333; outline: none; }
         .input-row input { flex: 1; padding: 9px 14px; border: none; background: #F0F2F5; border-radius: 20px; font-size: 13.5px; outline: none; }
         .media-row { display: flex; gap: 8px; padding-bottom: 2px; }
         .media-btn { font-size: 12px; background: #F5F7FA; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; color: #555; font-weight: 500; }
-        .media-btn:hover { background: #EED; }
 
+        /* ─── [NEW] 파일 1780990287591.jpeg 구현 기반 상세 프로필 모달 ─── */
+        #profile-detail-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--profile-dark-bg); display: none; flex-direction: column; z-index: 150; color: #fff; }
+        
+        /* 프로필 상단 바 */
+        .profile-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px 10px; }
+        .profile-close-btn { font-size: 24px; cursor: pointer; color: #fff; opacity: 0.9; }
+        .profile-edit-trigger { background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 16px; font-size: 13px; font-weight: 500; cursor: pointer; }
+
+        /* 프로필 콘텐츠 상단 컴포넌트 (디데이, 배경음악, 스티커) */
+        .profile-top-widgets { flex: 1; padding: 20px; display: flex; flex-direction: column; position: relative; }
+        .profile-dday { font-size: 16px; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 15px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        
+        /* 음악 위젯 형태 */
+        .profile-music-widget { background: rgba(43, 39, 37, 0.75); width: 150px; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 10px;}
+        .music-title { font-size: 12px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+        .music-artist { font-size: 11px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+        .music-icons { display: flex; gap: 14px; margin-top: 6px; font-size: 12px; color: #ddd; }
+
+        /* 인형/MBTI 스티커 데코 */
+        .profile-sticker-deco { position: absolute; right: 20px; top: 20px; text-align: right; font-size: 12px; background: rgba(255,255,255,0.15); padding: 6px 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 2px; }
+
+        /* 프로필 메인 센터 유저 (사진, 이름, 상메) */
+        .profile-center-user { display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; text-align: center; }
+        .profile-center-avatar { width: 90px; height: 90px; border-radius: 35px; background: #fff; font-size: 45px; display: flex; justify-content: center; align-items: center; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); object-fit: cover;}
+        .profile-center-name { font-size: 20px; font-weight: bold; margin-bottom: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .profile-center-status { font-size: 13px; color: #e5e5e5; text-shadow: 0 1px 2px rgba(0,0,0,0.2); max-width: 250px; }
+
+        /* 하단 액션 버튼 독 */
+        .profile-bottom-dock { height: 75px; background: rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; }
+        .profile-action-item { flex: 1; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; height: 100%; }
+        .profile-action-item:hover { background: rgba(255,255,255,0.05); }
+        .dock-separator { width: 1px; height: 24px; background: rgba(255,255,255,0.2); }
+        
         /* 마이페이지 기본 스타일 */
-        .profile-card { display: flex; align-items: center; padding: 24px 20px; }
+        .profile-card { display: flex; align-items: center; padding: 24px 20px; cursor: pointer; }
+        .profile-card:hover { background: var(--bg-light); }
         .profile-card .big-avatar { width: 64px; height: 64px; border-radius: 24px; background: #f0f2f5; font-size: 30px; display: flex; justify-content: center; align-items: center; margin-right: 16px;}
-        .wallet-banner { margin: 0 20px 16px; background: var(--kakao-yellow); border-radius: 12px; padding: 18px; font-weight: bold; display: flex; justify-content: space-between; box-shadow: 0 4px 14px rgba(254,229,0,0.2); }
+        .wallet-banner { margin: 0 20px 16px; background: var(--kakao-yellow); border-radius: 12px; padding: 18px; font-weight: bold; display: flex; justify-content: space-between; color: #191919; }
     </style>
 </head>
 <body>
 
     <div id="phone-wrapper">
+        <!-- 상단 고정 헤더 -->
         <div class="app-header">
             <h1 id="page-title">친구</h1>
             <div class="header-icons">
@@ -123,20 +153,25 @@
             </div>
         </div>
 
+        <!-- 통합 검색바 -->
         <div class="search-container">
             <input type="text" id="search-bar" placeholder="이름, 대화방 검색..." oninput="handleSearch()">
         </div>
 
+        <!-- 메인 콘텐츠 영역 -->
         <div class="main-content" id="main-content">
             
+            <!-- 1. 홈 탭 (친구 목록) -->
             <div id="tab-home" class="tab-panel active">
-                <div class="list-item">
-                    <div class="profile-img">👤</div>
-                    <div class="item-info">
-                        <div class="item-name">장윤호 (나)</div>
-                        <div class="item-desc">언제나 즐거운 하루</div>
+                <!-- 내 프로필 영역 (클릭 시 이미지 1780990287591.jpeg 구조로 열림) -->
+                <div class="profile-card" onclick="openProfileDetail('me')">
+                    <div class="big-avatar" id="my-home-avatar">👤</div>
+                    <div>
+                        <div style="font-size: 16.5px; font-weight:700;" id="my-home-name">장윤호 (나)</div>
+                        <div style="font-size: 12.5px; color:var(--text-sub);" id="my-home-status">弘益人間</div>
                     </div>
                 </div>
+                
                 <div class="banner">
                     <div><strong>왕관만 고르면 선물 증정!</strong><br><span style="font-size:11px; color:#888;">100% 당첨 이벤트 참여하기</span></div>
                     <span>🍔</span>
@@ -145,6 +180,7 @@
                 <div class="item-list" id="friend-list-container"></div>
             </div>
 
+            <!-- 2. 채팅 탭 -->
             <div id="tab-chat" class="tab-panel">
                 <div class="banner" style="background:#F0F4F9;">
                     <div><strong>매일을 쿨하게, 쿨탠다드</strong><br><span style="font-size:11px; color:#888;">무탠다드 X 기안84 특가전</span></div>
@@ -154,6 +190,7 @@
                 <div class="item-list" id="chat-list-container"></div>
             </div>
 
+            <!-- 3. 오픈채팅 탭 -->
             <div id="tab-openchat" class="tab-panel">
                 <div class="action-bar">
                     <button class="btn primary" onclick="createOpenProfile('my')">+ 내 오픈프로필</button>
@@ -163,19 +200,18 @@
                 
                 <div class="section-title">내 오픈프로필</div>
                 <div class="item-list" id="my-open-profiles"></div>
-
                 <div class="section-title">다른 사람 오픈프로필</div>
                 <div class="item-list" id="other-open-profiles"></div>
-
                 <div class="section-title">오픈채팅방 목록</div>
                 <div class="item-list" id="open-room-list"></div>
             </div>
 
+            <!-- 4. 마이페이지 탭 -->
             <div id="tab-mypage" class="tab-panel">
-                <div class="profile-card">
-                    <div class="big-avatar">🚂</div>
+                <div class="profile-card" onclick="openProfileDetail('me')">
+                    <div class="big-avatar" id="my-page-avatar">👤</div>
                     <div>
-                        <div style="font-size: 18px; font-weight:700;">장윤호</div>
+                        <div style="font-size: 18px; font-weight:700;" id="my-page-name">장윤호</div>
                         <div style="font-size: 13px; color:var(--text-sub);">user_id: 19679</div>
                     </div>
                 </div>
@@ -188,15 +224,11 @@
                     <div>❤️<br><span style="display:inline-block; margin-top:4px; color:#333;">받은선물</span></div>
                     <div>⚡<br><span style="display:inline-block; margin-top:4px; color:#333;">톡딜</span></div>
                     <div>😊<br><span style="display:inline-block; margin-top:4px; color:#333;">이모티콘</span></div>
-                    <div>📺<br><span style="display:inline-block; margin-top:4px; color:#333;">라이브</span></div>
-                    <div>🛠️<br><span style="display:inline-block; margin-top:4px; color:#333;">메이커스</span></div>
-                    <div>🐻<br><span style="display:inline-block; margin-top:4px; color:#333;">프렌즈</span></div>
-                    <div>🎮<br><span style="display:inline-block; margin-top:4px; color:#333;">게임</span></div>
                 </div>
             </div>
-
         </div>
 
+        <!-- 하단 내비게이션 탭바 -->
         <div class="bottom-nav">
             <div class="nav-item active" onclick="switchTab('home', this)">
                 <span class="icon">👤</span><span>홈</span>
@@ -212,6 +244,50 @@
             </div>
         </div>
 
+        <!-- ─── [NEW] 파일 1780990287591.jpeg 연동 상세 프로필 레이어 ─── -->
+        <div id="profile-detail-screen">
+            <div class="profile-top-bar">
+                <span class="profile-close-btn" onclick="closeProfileDetail()">✕</span>
+                <span class="profile-edit-trigger" onclick="triggerProfileEdit()">프로필 편집</span>
+            </div>
+            
+            <div class="profile-top-widgets">
+                <!-- 디데이 시스템 -->
+                <div class="profile-dday" id="detail-dday">D+8404 birth</div>
+                
+                <!-- 상단 배경 뮤직 컴포넌트 -->
+                <div class="profile-music-widget">
+                    <div class="music-title" id="detail-music-title">CEREMONY</div>
+                    <div class="music-artist" id="detail-music-artist">QWER</div>
+                    <div class="music-icons"><span>♡</span> <span>▷</span></div>
+                </div>
+
+                <!-- 부가 텍스트 및 스티커 데코 스페이스 -->
+                <div class="profile-sticker-deco" id="detail-sticker">
+                    <span>어휴.. 귀찮아 ☕</span>
+                    <span style="font-weight:bold; color:var(--kakao-yellow);">INTP</span>
+                </div>
+            </div>
+
+            <div class="profile-center-user">
+                <!-- 중앙 유저 메인 정보 -->
+                <div class="profile-center-avatar" id="detail-avatar">👤</div>
+                <div class="profile-center-name" id="detail-name">장윤호</div>
+                <div class="profile-center-status" id="detail-status">弘益人間</div>
+            </div>
+
+            <div class="profile-bottom-dock">
+                <div class="profile-action-item" id="profile-chat-action">
+                    <span>💬</span> <span id="profile-action-text">나와의 채팅</span>
+                </div>
+                <div class="dock-separator"></div>
+                <div class="profile-action-item" onclick="alert('새 게시물 기능이 준비 중입니다.')">
+                    <span>➕</span> <span>새 게시물</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 계층 이동식 오버레이 채팅방 스크린 -->
         <div id="chat-room-screen">
             <div class="chat-header">
                 <span class="back-btn" onclick="closeChatRoom()">◀</span>
@@ -237,37 +313,49 @@
     </div>
 
     <script>
+        // 핵심 상태 관리 데이터베이스 모델
         let state = {
+            // '나(본인)' 프로필 데이터 모델 확장 기입
+            me: {
+                id: 'me',
+                name: '장윤호',
+                status: '弘益人間',
+                avatar: '🚂',
+                dday: 'D+8404 birth',
+                musicTitle: 'CEREMONY',
+                musicArtist: 'QWER',
+                stickerText: '어휴.. 귀찮아 ☕ (INTP)'
+            },
             friends: [
-                { id: 'f1', name: '예빈이', status: '오늘도 파이팅!', avatar: '👩' },
-                { id: 'f2', name: '채원이', status: '여행 중 ✈️', avatar: '☀️' },
-                { id: 'f3', name: '경수', status: '업무 집중 모드', avatar: '🧑' },
-                { id: 'f4', name: '영빈이', status: 'ㅎㅇㅌ', avatar: '👨' }
+                { id: 'f1', name: '은지누나', status: '오늘도 파이팅!', avatar: '👩', dday: 'D+365', musicTitle: 'Home', musicArtist: '박효신', stickerText: '행복하자' },
+                { id: 'f2', name: '현지누나', status: '여행 중 ✈️', avatar: '☀️', dday: 'D-20', musicTitle: '여행', musicArtist: '볼빨간사춘기', stickerText: 'ENFP' },
+                { id: 'f3', name: '진현이형', status: '업무 집중 모드', avatar: '🧑', dday: 'D+1200', musicTitle: '야생화', musicArtist: '박효신', stickerText: '열공' },
+                { id: 'f4', name: '아버지', status: '홈플대란 대기중', avatar: '👨', dday: '행복한 우리집', musicTitle: '동반자', musicArtist: '태진아', stickerText: '건강제일' }
             ],
             openProfiles: [
                 { id: 'op1', type: 'my', name: '개발자 장윤호', desc: '프론트엔드 질문 환영', avatar: '💻' },
-                { id: 'op2', type: 'other', name: '고대딩 성인수다방장', desc: '매너 채팅 필수', avatar: '🐱' },
-                { id: 'op3', type: 'other', name: '박총책 사모방', desc: '공식 운영 프로필입니다.', avatar: '📚' }
+                { id: 'op2', type: 'other', name: '고대딩 성인수다방장', desc: '매너 채팅 필수', avatar: '🐱' }
             ],
             rooms: [
-                { id: 'r1', type: 'normal', title: '친구 단톡방', members: ['me', 'f4', 'f1'], messages: [
-                    { id: 'm1', senderId: 'f4', senderName: '경수', type: 'text', content: '오늘 저녁 뭐 먹니?', time: '오후 12:17' },
-                    { id: 'm2', senderId: 'me', senderName: '나', type: 'text', content: '삼겹살 먹고 싶어!', time: '오후 12:19' }
-                ]},
-                { id: 'r2', type: 'open', title: '고대딩 성인수다방', members: ['me', 'op2'], messages: [
-                    { id: 'm3', senderId: 'op2', senderName: '고대딩 성인수다방장', type: 'text', content: '안녕하세요! 반갑습니다.', time: '오후 4:03' }
-                ]},
-                { id: 'r3', type: 'open', title: '남북대 졸업생 정보공유방', members: ['me', 'op3'], messages: [
-                    { id: 'm4', senderId: 'op3', senderName: '동아리', type: 'text', content: '일경험 공고 확인 부탁드립니다.', time: '오전 11:20' }
+                { id: 'r1', type: 'normal', title: '가족 단톡방', members: ['me', 'f4', 'f1'], messages: [
+                    { id: 'm1', senderId: 'f4', senderName: '아버지', type: 'text', content: '오늘 저녁 뭐 먹니?', time: '오후 12:17' }
                 ]}
             ],
             currentRoomId: null,
-            searchQuery: ''
+            searchQuery: '',
+            currentActiveProfileId: null // 현재 열려있는 프로필의 고유 ID 타겟팅 변수
         };
 
         window.onload = () => { renderAll(); };
 
         function renderAll() {
+            // 내 프로필 홈화면 및 마이페이지 동기 반영 동적 주입
+            document.getElementById('my-home-name').innerText = state.me.name + " (나)";
+            document.getElementById('my-home-status').innerText = state.me.status;
+            document.getElementById('my-home-avatar').innerText = state.me.avatar;
+            document.getElementById('my-page-name').innerText = state.me.name;
+            document.getElementById('my-page-avatar').innerText = state.me.avatar;
+
             renderFriends();
             renderChatList();
             renderOpenChatTab();
@@ -298,12 +386,12 @@
             state.friends.filter(f => f.name.toLowerCase().includes(state.searchQuery)).forEach(f => {
                 container.innerHTML += `
                     <div class="list-item">
-                        <div class="profile-img">${f.avatar}</div>
-                        <div class="item-info" onclick="openDirectChat('${f.id}')">
+                        <div class="profile-img" onclick="openProfileDetail('${f.id}')">${f.avatar}</div>
+                        <div class="item-info" onclick="openProfileDetail('${f.id}')">
                             <div class="item-name">${f.name}</div>
                             <div class="item-desc">${f.status}</div>
                         </div>
-                        <button class="manage-btn" onclick="manageFriend('${f.id}')">관리</button>
+                        <button class="manage-btn" onclick="event.stopPropagation(); manageFriend('${f.id}');">삭제</button>
                     </div>
                 `;
             });
@@ -313,34 +401,94 @@
             const name = prompt('추가할 친구의 이름을 입력하세요:');
             if(!name) return;
             const status = prompt('상태 메시지를 입력하세요:', '');
-            const avatars = ['🦊','🐰','🐹','🐻','🐼','🦁'];
-            state.friends.push({ id: 'f_' + Date.now(), name, status: status || '', avatar: avatars[Math.floor(Math.random() * avatars.length)] });
+            state.friends.push({ 
+                id: 'f_' + Date.now(), name, status: status || '', avatar: '🦊',
+                dday: 'D-Day', musicTitle: '음악 없음', musicArtist: '아티스트', stickerText: '기본 스티커'
+            });
             renderFriends();
         }
 
         function manageFriend(id) {
-            const friend = state.friends.find(f => f.id === id);
-            if(!friend) return;
-            const action = prompt(`[${friend.name}] 관리\n1. 수정\n2. 삭제`);
-            if(action === '1') {
-                const newName = prompt('변경할 이름:', friend.name);
-                const newStatus = prompt('변경할 상태메시지:', friend.status);
-                if(newName) friend.name = newName;
-                if(newStatus !== null) friend.status = newStatus;
-                renderFriends();
-            } else if(action === '2' && confirm('정말 삭제하시겠습니까?')) {
+            if(confirm('이 친구를 명단에서 삭제하시겠습니까?')) {
                 state.friends = state.friends.filter(f => f.id !== id);
                 renderFriends();
             }
         }
 
+        /* ─── 상세 프로필 인터페이스 엔진 제어 시스템 (파일 1780990287591.jpeg 완벽 연동) ─── */
+        function openProfileDetail(id) {
+            state.currentActiveProfileId = id;
+            let targetData = id === 'me' ? state.me : state.friends.find(f => f.id === id);
+            if(!targetData) return;
+
+            // DOM 맵핑 바인딩
+            document.getElementById('detail-dday').innerText = targetData.dday || 'D+0000 birth';
+            document.getElementById('detail-music-title').innerText = targetData.musicTitle || '노래 제목';
+            document.getElementById('detail-music-artist').innerText = targetData.musicArtist || '아티스트';
+            document.getElementById('detail-sticker').innerHTML = `<span>${targetData.stickerText || '상태 데코'}</span>`;
+            document.getElementById('detail-avatar').innerText = targetData.avatar || '👤';
+            document.getElementById('detail-name').innerText = targetData.name;
+            document.getElementById('detail-status').innerText = targetData.status || '';
+
+            // 하단 버튼 구성 유동성 분기
+            const actionText = document.getElementById('profile-action-text');
+            const chatAction = document.getElementById('profile-chat-action');
+            if(id === 'me') {
+                actionText.innerText = "나와의 채팅";
+                chatAction.onclick = () => { closeProfileDetail(); switchTab('chat', document.querySelectorAll('.nav-item')[1]); };
+            } else {
+                actionText.innerText = "1:1 채팅";
+                chatAction.onclick = () => { closeProfileDetail(); openDirectChat(id); };
+            }
+
+            document.getElementById('profile-detail-screen').style.display = 'flex';
+        }
+
+        function closeProfileDetail() {
+            document.getElementById('profile-detail-screen').style.display = 'none';
+            state.currentActiveProfileId = null;
+        }
+
+        // 핵심 기능 요구 사항: 친구의 모든 요소를 가변 팝업 편집 윈도우 인터페이스화
+        function triggerProfileEdit() {
+            const id = state.currentActiveProfileId;
+            let targetData = id === 'me' ? state.me : state.friends.find(f => f.id === id);
+            if(!targetData) return;
+
+            // 차례대로 요소를 개별 가변 입력받음
+            const nextName = prompt('수정할 이름을 입력하세요:', targetData.name);
+            if(nextName) targetData.name = nextName;
+
+            const nextStatus = prompt('수정할 상태 메시지를 입력하세요:', targetData.status);
+            if(nextStatus !== null) targetData.status = nextStatus;
+
+            const nextAvatar = prompt('수정할 프로필 아바타(이모지 등)를 입력하세요:', targetData.avatar);
+            if(nextAvatar) targetData.avatar = nextAvatar;
+
+            const nextDday = prompt('수정할 디데이 텍스트를 입력하세요:', targetData.dday);
+            if(nextDday !== null) targetData.dday = nextDday;
+
+            const nextMTitle = prompt('수정할 배경음악 제목을 입력하세요:', targetData.musicTitle);
+            if(nextMTitle !== null) targetData.musicTitle = nextMTitle;
+
+            const nextMArtist = prompt('수정할 배경음악 가수를 입력하세요:', targetData.musicArtist);
+            if(nextMArtist !== null) targetData.musicArtist = nextMArtist;
+
+            const nextSticker = prompt('수정할 우측 데코 스티커 문구를 입력하세요:', targetData.stickerText);
+            if(nextSticker !== null) targetData.stickerText = nextSticker;
+
+            // 전체 다시 그리기 연동 동기화 및 렌더링 리프레시
+            renderAll();
+            openProfileDetail(id); // 현재 창 데이터 업데이트 리로드
+        }
+
+        /* ─── 기존 채팅 및 오픈채팅 로직 유지 연동 파트 ─── */
         function renderChatList() {
             const container = document.getElementById('chat-list-container');
             container.innerHTML = '';
             state.rooms.filter(r => r.title.toLowerCase().includes(state.searchQuery)).forEach(r => {
                 const lastMsg = r.messages[r.messages.length - 1];
-                let desc = '대화 내역이 없습니다.';
-                let time = '';
+                let desc = '대화 내역이 없습니다.'; let time = '';
                 if(lastMsg) {
                     desc = lastMsg.type === 'text' ? lastMsg.content : `[${lastMsg.type}]`;
                     time = lastMsg.time;
