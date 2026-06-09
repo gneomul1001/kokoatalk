@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CocoaTalk Simulator - Advanced Profile Customizer</title>
+    <title>CocoaTalk Simulator - Data Persistent System</title>
     <style>
         :root {
             --kakao-yellow: #FEE500;
@@ -440,7 +440,8 @@
     </div>
 
     <script>
-        let state = {
+        // 초기 기본 백업 데이터 정의
+        const defaultState = {
             me: {
                 id: 'me', name: '장윤호', status: '弘益人間', avatar: '🚂',
                 dday: 'D+8404 birth', musicTitle: 'CEREMONY', musicArtist: 'QWER', stickerText: '어휴.. 귀찮아 ☕ (INTP)',
@@ -464,7 +465,35 @@
             currentActiveProfileId: null
         };
 
-        window.onload = () => { renderAll(); };
+        let state = {};
+
+        // ─── [CORE SYSTEM] 로컬 스토리지 로드 및 세이브 엔진 ───
+        function loadState() {
+            const savedData = localStorage.getItem('COCOATALK_SIM_DATA');
+            if (savedData) {
+                try {
+                    state = JSON.parse(savedData);
+                    // 세션 휘발성 타겟 아이디값 초기화 보호 조치
+                    state.currentRoomId = null;
+                    state.searchQuery = '';
+                    state.currentActiveProfileId = null;
+                } catch (e) {
+                    state = JSON.parse(JSON.stringify(defaultState));
+                }
+            } else {
+                state = JSON.parse(JSON.stringify(defaultState));
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('COCOATALK_SIM_DATA', JSON.stringify(state));
+        }
+
+        // 앱 최초 시작 로드 동기화 바인딩
+        window.onload = () => { 
+            loadState();
+            renderAll(); 
+        };
 
         function renderAll() {
             document.getElementById('my-home-name').innerText = state.me.name + " (나)";
@@ -485,7 +514,6 @@
             element.classList.add('active');
             
             const titleMap = { home: '친구', chat: '채팅', openchat: '오픈채팅', mypage: '더보기' };
-            // 요구사항 1 변형: 전체 페이지 타이틀을 상시 코코아톡으로 유지하거나 탭 성격을 맞춰줍니다.
             document.getElementById('page-title').innerText = tabName === 'home' ? '코코아톡' : titleMap[tabName];
         }
 
@@ -502,6 +530,7 @@
             const title = prompt('새로 개설할 일반 대화방 이름을 입력하세요:');
             if(!title) return;
             state.rooms.push({ id: 'r_' + Date.now(), type: 'normal', title, members: ['me'], messages: [] });
+            saveState(); // 변경 저장
             renderChatList();
         }
 
@@ -530,6 +559,7 @@
             const name = prompt('추가할 친구의 이름:');
             if(!name) return;
             state.friends.push({ id: 'f_' + Date.now(), name, status: '상태메시지', avatar: '👤', dday: 'D-day', musicTitle: '', musicArtist: '', stickerText: '', posts: [] });
+            saveState(); // 변경 저장
             renderFriends();
         }
 
@@ -569,9 +599,11 @@
             if(mode === '1') {
                 const nextTitle = prompt('방이름 수정:', room.title);
                 if(nextTitle) room.title = nextTitle;
+                saveState();
                 renderChatList();
             } else if(mode === '2') {
                 state.rooms = state.rooms.filter(r => r.id !== roomId);
+                saveState();
                 renderChatList();
             }
         }
@@ -589,7 +621,6 @@
             document.getElementById('detail-name').innerText = targetData.name;
             document.getElementById('detail-status').innerText = targetData.status || '';
 
-            // 타임라인 로드
             const tlBox = document.getElementById('detail-post-timeline');
             tlBox.innerHTML = '';
             if(targetData.posts && targetData.posts.length > 0) {
@@ -616,12 +647,10 @@
             closeAdvancedEditDock();
         }
 
-        /* ─── [NEW 조작부] 하단 프로필 에디터 컨트롤 센터 스크립트 엔진 ─── */
         function openAdvancedEditDock() {
             const id = state.currentActiveProfileId;
             let targetData = id === 'me' ? state.me : state.friends.find(f => f.id === id);
             
-            // 기존 텍스트 폼 기본 데이터 셋 채우기
             document.getElementById('edit-input-name-form').value = targetData.name;
             document.getElementById('edit-input-status-form').value = targetData.status;
 
@@ -641,7 +670,6 @@
             document.getElementById(targetTabs[index]).classList.add('active');
         }
 
-        // 스티커, 디데이, 아바타 클릭 시 즉시 프로필 모델에 동적 주입 및 리렌더링
         function applyWidgetChange(field, value) {
             const id = state.currentActiveProfileId;
             let targetData = id === 'me' ? state.me : state.friends.find(f => f.id === id);
@@ -650,9 +678,10 @@
             else if(field === 'dday') targetData.dday = value;
             else if(field === 'avatar') targetData.avatar = value;
 
+            saveState(); // 스토리지 영구 기록
             renderAll();
             openProfileDetail(id);
-            openAdvancedEditDock(); // 편집창 유지
+            openAdvancedEditDock();
         }
 
         function applyMusicTheme(title, artist) {
@@ -662,6 +691,7 @@
             targetData.musicTitle = title;
             targetData.musicArtist = artist;
 
+            saveState(); // 스토리지 영구 기록
             renderAll();
             openProfileDetail(id);
             openAdvancedEditDock();
@@ -677,10 +707,11 @@
             if(n) targetData.name = n;
             targetData.status = s;
 
+            saveState(); // 스토리지 영구 기록
             renderAll();
             openProfileDetail(id);
             openAdvancedEditDock();
-            alert('텍스트 정보가 동기화되었습니다.');
+            alert('텍스트 정보가 동기화 저장되었습니다.');
         }
 
         function addNewPostTimeline() {
@@ -690,10 +721,10 @@
             if(!postContent) return;
             if(!targetData.posts) targetData.posts = [];
             targetData.posts.unshift(postContent);
+            saveState(); // 스토리지 영구 기록
             openProfileDetail(id);
         }
 
-        /* ─── 채팅 및 서랍 레이어 시스템 연동 유지 ─── */
         function toggleDrawer(openState) {
             const drawer = document.getElementById('chat-drawer-screen');
             if(openState) { renderDrawerMembers(); drawer.classList.add('open'); }
@@ -721,6 +752,7 @@
             const newId = 'f_' + Date.now();
             state.friends.push({ id: newId, name, status: '초대됨', avatar: '🤖', posts: [] });
             room.members.push(newId);
+            saveState();
             renderDrawerMembers();
             enterChatRoom(room.id);
         }
@@ -728,6 +760,7 @@
         function exitChatRoomDirect() {
             if(confirm('채팅방을 나갈까요?')) {
                 state.rooms = state.rooms.filter(r => r.id !== state.currentRoomId);
+                saveState();
                 toggleDrawer(false); closeChatRoom();
             }
         }
@@ -738,6 +771,7 @@
                 const friend = state.friends.find(f => f.id === friendId);
                 room = { id: 'r_' + Date.now(), type: 'normal', title: friend.name, members: ['me', friendId], messages: [] };
                 state.rooms.push(room);
+                saveState();
             }
             enterChatRoom(room.id);
         }
@@ -802,7 +836,9 @@
             const room = state.rooms.find(r => r.id === state.currentRoomId);
             let senderName = senderId === 'me' ? '나' : (state.friends.find(f => f.id === senderId)?.name || '상대방');
             room.messages.push({ id: 'm_' + Date.now(), senderId, senderName, type: 'text', content, time: getKakaoTime() });
-            input.value = ''; renderChatMessages();
+            input.value = ''; 
+            saveState(); // 대화 저장
+            renderChatMessages();
         }
 
         function sendMedia(type) {
@@ -811,6 +847,7 @@
             let senderName = senderId === 'me' ? '나' : (state.friends.find(f => f.id === senderId)?.name || '상대방');
             let content = type === 'emoticon' ? '🥰' : '';
             room.messages.push({ id: 'm_' + Date.now(), senderId, senderName, type, content, time: getKakaoTime() });
+            saveState(); // 대화 저장
             renderChatMessages();
         }
 
